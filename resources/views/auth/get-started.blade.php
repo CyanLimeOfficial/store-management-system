@@ -86,51 +86,43 @@
         <!-- partial -->
         <div class="main-panel">
           <div class="content-wrapper">
-                          <div class="col-12 grid-margin stretch-card">
+              <div class="col-12 grid-margin stretch-card">
                 <div class="card">
                   <div class="card-body">
-                    <h4 class="card-title">Basic form elements</h4>
-                    <p class="card-description"> Basic form elements </p>
-                    <form class="forms-sample">
+                    <h4 class="card-title">Get Started</h4>
+                    <p class="card-description"> Before anything else, register your store here! </p>
+                    <form class="forms-sample" method="POST" action="{{ route('store_info.submit') }}" enctype="multipart/form-data">
+                     @csrf
                       <div class="form-group">
-                        <label for="exampleInputName1">Name</label>
-                        <input type="text" class="form-control" id="exampleInputName1" placeholder="Name">
+                        <label for="id">Store Reference Number</label>
+                        <input type="text" class="form-control" value="{{Auth::user()->id}}" disabled>
                       </div>
                       <div class="form-group">
-                        <label for="exampleInputEmail3">Email address</label>
-                        <input type="email" class="form-control" id="exampleInputEmail3" placeholder="Email">
+                        <label for="name">Store's Name</label>
+                        <input type="text" class="form-control" name="store_name">
                       </div>
                       <div class="form-group">
-                        <label for="exampleInputPassword4">Password</label>
-                        <input type="password" class="form-control" id="exampleInputPassword4" placeholder="Password">
+                        <label for="email">Address</label>
+                        <input type="text" class="form-control" name="address">
                       </div>
                       <div class="form-group">
-                        <label for="exampleSelectGender">Gender</label>
-                        <select class="form-control" id="exampleSelectGender">
-                          <option>Male</option>
-                          <option>Female</option>
-                        </select>
-                      </div>
-                      <div class="form-group">
-                        <label>File upload</label>
-                        <input type="file" name="img[]" class="file-upload-default">
+                        <label>Store's Logo</label>
+                        <input type="file" name="img[]" class="file-upload-default" accept=".jpg,.jpeg,.png" id="fileInput">
                         <div class="input-group col-xs-12">
-                          <input type="text" class="form-control file-upload-info" disabled placeholder="Upload Image">
                           <span class="input-group-append">
-                            <button class="file-upload-browse btn btn-primary" type="button">Upload</button>
+                            <button class="file-upload-browse btn btn-primary" name="logo" type="button" onclick="document.getElementById('fileInput').click()">Upload</button>
                           </span>
+                          <input type="text" class="form-control file-upload-info" disabled placeholder="Upload Image" id="fileName">
                         </div>
                       </div>
                       <div class="form-group">
-                        <label for="exampleInputCity1">City</label>
-                        <input type="text" class="form-control" id="exampleInputCity1" placeholder="Location">
-                      </div>
-                      <div class="form-group">
-                        <label for="exampleTextarea1">Textarea</label>
-                        <textarea class="form-control" id="exampleTextarea1" rows="4"></textarea>
+                        <label for="description">Description</label>
+                        <textarea class="form-control" name="description" rows="7"></textarea>
                       </div>
                       <button type="submit" class="btn btn-primary mr-2">Submit</button>
-                      <button class="btn btn-light">Cancel</button>
+                      @if(session('error'))
+                          <div class="alert alert-danger mt-2">{{ session('error') }}q324</div>
+                      @endif
                     </form>
                   </div>
                 </div>
@@ -160,5 +152,14 @@
     <!-- Custom js for this page -->
     <script src="assets/js/dashboard.js"></script>
     <!-- End custom js for this page -->
+    {{-- Inline JS --}}
+    <script>
+      // Update the file name in the input field when a file is selected
+      document.getElementById('fileInput').addEventListener('change', function () {
+        const fileName = this.files.length > 0 ? this.files[0].name : '';
+        document.getElementById('fileName').value = fileName;
+      });
+    </script>
+    {{-- End Inline JS --}}
   </body>
 </html>

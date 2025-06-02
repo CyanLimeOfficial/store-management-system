@@ -15,11 +15,13 @@ return new class extends Migration
             $table->id();
             $table->foreignId('user_id')->constrained('users')->unique()->onDelete('cascade');
             $table->string('store_name');
-            $table->binary('logo');
-            $table->string('address');
-            $table->string('description');
+            $table->binary('logo')->nullable();
+            $table->string('address')->nullable();
+            $table->string('description')->nullable();
             $table->timestamps();
         });
+
+        DB::statement('ALTER TABLE store_info MODIFY logo MEDIUMBLOB NULL');
     }
 
     /**

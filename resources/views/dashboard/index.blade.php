@@ -20,28 +20,45 @@
     <link rel="stylesheet" href="assets/css/style.css">
     <!-- End layout styles -->
     <link rel="shortcut icon" href="assets/images/favicon.png" />
+    {{-- PHP LOGICS --}}
+      @php
+        use App\Models\StoreInfo;
+        $store = StoreInfo::where('user_id', auth()->id())->first();
+      @endphp
   </head>
   <body>
     <div class="container-scroller">
+      
       <!-- partial:partials/_navbar.html -->
       <nav class="navbar default-layout-navbar col-lg-12 col-12 p-0 fixed-top d-flex flex-row">
         <div class="navbar-brand-wrapper d-flex align-items-center">
-          <a class="navbar-brand brand-logo" href="index.html">
-            <img src="assets/images/logo.svg" alt="logo" class="logo-dark" />
+          <a class="navbar-brand" href="{{ url('/home') }}">
+            @if($store && $store->store_name)
+              <h6 class="nav-links" style="color:aliceblue">{{ $store->store_name }}</h6>
+            @endif
           </a>
-          <a class="navbar-brand brand-logo-mini" href="index.html"><img src="assets/images/logo-mini.svg" alt="logo" /></a>
         </div>
+
         <div class="navbar-menu-wrapper d-flex align-items-center flex-grow-1">
           <h5 class="mb-0 font-weight-medium d-none d-lg-flex">Store Inventory Management System</h5>
           <ul class="navbar-nav navbar-nav-right ml-auto">
             <li class="nav-item dropdown d-none d-xl-inline-flex user-dropdown">
               <a class="nav-link dropdown-toggle" id="UserDropdown" href="#" data-toggle="dropdown" aria-expanded="false">
-                <img class="img-xs rounded-circle ml-2" src="assets/images/faces/face8.jpg" alt="Profile image"> <span class="font-weight-normal"> {{Auth::user()->name}} </span></a>
+                @if($store && $store->logo)
+                  <img class="img-xs rounded-circle ml-2" src="data:image/png;base64,{{ base64_encode($store->logo) }}" alt="Store Logo">
+                @endif
+                <span class="font-weight-normal"> {{ Auth::user()->name }} </span>
+                </a>
               <div class="dropdown-menu dropdown-menu-right navbar-dropdown" aria-labelledby="UserDropdown">
                 <div class="dropdown-header text-center">
-                  <img class="img-md rounded-circle" src="assets/images/faces/face8.jpg" alt="Profile image">
+                  @if($store && $store->logo)
+                    <img class="img-md rounded-circle" width="100" height="100" src="data:image/png;base64,{{ base64_encode($store->logo) }}" alt="Store Logo">
+                  @else
+                    <img class="img-md rounded-circle" src="{{ asset('assets/images/faces/face8.jpg') }}" alt="Profile image">
+                  @endif
                   <p class="mb-1 mt-3">{{ Auth::user()->name }}</p>
                 </div>
+
                 <a class="dropdown-item"><i class="dropdown-item-icon icon-user text-primary"></i> My Profile</a>
                 <a class="dropdown-item" href="{{ route('logout') }}"
                   onclick="event.preventDefault(); document.getElementById('logout-form').submit();">
@@ -105,7 +122,21 @@
         <!-- partial -->
         <div class="main-panel">
           <div class="content-wrapper">
-                        <div class="row quick-action-toolbar">
+            @if(session('success'))
+            <div class="row purchace-popup">
+              <div class="col-12 stretch-card grid-margin">
+                <div class="card card-secondary">
+                  <span class="card-body d-lg-flex align-items-center">
+                    <p class="mb-lg-0">Store Information has been recorded.</p>
+                    <button class="close popup-dismiss ml-2" onclick="this.closest('.purchace-popup').style.display='none'">
+                      <span aria-hidden="true">&times;</span>
+                    </button>
+                  </span>
+                </div>
+              </div>
+            </div>
+            @endif
+            <div class="row quick-action-toolbar">
               <div class="col-md-12 grid-margin">
                 <div class="card">
                   <div class="card-header d-block d-md-flex">
