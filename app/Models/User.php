@@ -45,4 +45,10 @@ class User extends Authenticatable
             'password' => 'hashed',
         ];
     }
+    
+    public function store_info()
+    {
+        return $this->hasOne(StoreInfo::class); // Or whatever model you’re referencing
+    }
+
 }
