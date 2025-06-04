@@ -269,8 +269,12 @@
     <!-- container-scroller -->
     {{-- Modal Panel --}}
     <div class="modal fade" id="productModal" tabindex="-1" role="dialog" aria-labelledby="productModalLabel" aria-hidden="true">
-      <div class="modal-dialog modal-lg" role="document">
+      <div class="modal-dialog modal-md" role="document">
         <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title">Search Products</h5>
+          </div>
+          <div class="modal-body">
             <div class="table-responsive">
               <table class="table table-bordered table-hover table-striped" id="productTable">
                 <thead class="thead-light">
@@ -285,7 +289,7 @@
                   <tr>
                     <td>{{ $product->product_name }}</td>
                     <td>{{ $product->category }}</td>
-                    <td>${{ number_format($product->price, 2) }}</td>
+                    <td>{{ number_format($product->price, 2) }}</td>
                   </tr>
                   @endforeach
                 </tbody>

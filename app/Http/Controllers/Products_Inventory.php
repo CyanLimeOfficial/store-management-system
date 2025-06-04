@@ -38,7 +38,7 @@ class Products_Inventory extends Controller
                 'price'        => $request->price,
             ]);
 
-            return redirect('/inventory')->with('success', 'Product added successfully!');
+            return redirect('/home')->with('success', 'Product added successfully!');
         } catch (\Exception $e) {
             return redirect()->back()->with('error', 'Failed to add product.')->withInput();
         }
