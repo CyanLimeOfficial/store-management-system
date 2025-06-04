@@ -4,6 +4,7 @@ use Illuminate\Support\Facades\Route;
 // Import ROUTES
 use App\Http\Controllers\Auth\LoginController;
 use App\Http\Controllers\GetStarted;
+use App\Http\Controllers\Products_Inventory;
 // Import Middleware
 use App\Http\Middleware\CheckStoreExist;
 
@@ -24,7 +25,7 @@ Route::middleware(['auth'])->group(function () {
     });
 
     // Handle form submission (no need for GET here)
-    Route::post('/store-info/submit', [GetStarted::class, 'store'])->name('store_info.submit');
+    Route::post('/get-started/submit', [GetStarted::class, 'store'])->name('store_info.submit');
 });
 
 
@@ -34,4 +35,10 @@ Route::middleware(['auth', 'check.store_info'])->group(function () {
     Route::get('/home', function () {
         return view('dashboard.index');
     }); 
+    Route::get('/inventory/add-products', function () {
+        return view('dashboard.inventory_add');
+    }); 
+
+    // Handle form submission (no need for GET here)
+    Route::post('/inventory/add-products/store', [Products_Inventory::class, 'add_product'])->name('add.product');
 });

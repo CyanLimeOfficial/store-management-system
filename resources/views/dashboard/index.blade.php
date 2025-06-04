@@ -15,6 +15,9 @@
     <link rel="stylesheet" href="assets/vendors/chartist/chartist.min.css">
     <!-- End plugin css for this page -->
     <!-- inject:css -->
+<!-- Add these right before your closing </body> tag or in your scripts section -->
+<link rel="stylesheet" href="https://cdn.datatables.net/1.11.5/css/dataTables.bootstrap4.min.css">
+
     <!-- endinject -->
     <!-- Layout styles -->
     <link rel="stylesheet" href="assets/css/style.css">
@@ -23,8 +26,12 @@
     {{-- PHP LOGICS --}}
       @php
         use App\Models\StoreInfo;
+        use App\Models\Product_Inventory;
         $store = StoreInfo::where('user_id', auth()->id())->first();
+        $products = [];
+        $products = Product_Inventory::where('store_id', $store->id)->get();
       @endphp
+
   </head>
   <body>
     <div class="container-scroller">
@@ -93,7 +100,7 @@
             </li>
             <li class="nav-item nav-category"><span class="nav-link">Manage</span></li>
             <li class="nav-item">
-              <a class="nav-link" href="pages/icons/simple-line-icons.html">
+              <a class="nav-link" href="">
                 <span class="menu-title">Inventory</span>
                 <i class="icon-layers menu-icon"></i>
               </a>
@@ -145,10 +152,14 @@
                   </div>
                   <div class="d-md-flex row m-0 quick-action-btns" role="group" aria-label="Quick action buttons">
                     <div class="col-sm-6 col-md-3 p-3 text-center btn-wrapper">
-                      <button type="button" class="btn px-0"> <i class="icon-user mr-2"></i> Add Product</button>
+                      <a href="/inventory/add-products" class="btn px-0">
+                        <i class="icon-magnifier-add mr-2"></i> Add Product
+                      </a>
                     </div>
                     <div class="col-sm-6 col-md-3 p-3 text-center btn-wrapper">
-                      <button type="button" class="btn px-0"><i class="icon-docs mr-2"></i> See products</button>
+                      <button type="button" class="btn px-0" data-toggle="modal" data-target="#productModal">
+                        <i class="icon-eye mr-2"></i> See products
+                      </button>
                     </div>
                     <div class="col-sm-6 col-md-3 p-3 text-center btn-wrapper">
                       <button type="button" class="btn px-0"><i class="icon-folder mr-2"></i>Add Debitor</button>
@@ -256,6 +267,37 @@
       <!-- page-body-wrapper ends -->
     </div>
     <!-- container-scroller -->
+    {{-- Modal Panel --}}
+    <div class="modal fade" id="productModal" tabindex="-1" role="dialog" aria-labelledby="productModalLabel" aria-hidden="true">
+      <div class="modal-dialog modal-lg" role="document">
+        <div class="modal-content">
+            <div class="table-responsive">
+              <table class="table table-bordered table-hover table-striped" id="productTable">
+                <thead class="thead-light">
+                  <tr>
+                    <th>Product Name</th>
+                    <th>Category</th>
+                    <th>Price</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  @foreach($products as $product)
+                  <tr>
+                    <td>{{ $product->product_name }}</td>
+                    <td>{{ $product->category }}</td>
+                    <td>${{ number_format($product->price, 2) }}</td>
+                  </tr>
+                  @endforeach
+                </tbody>
+              </table>
+            </div>
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+          </div>
+        </div>
+      </div>
+    </div>
     <!-- plugins:js -->
     <script src="assets/vendors/js/vendor.bundle.base.js"></script>
     <!-- endinject -->
@@ -272,5 +314,19 @@
     <!-- Custom js for this page -->
     <script src="assets/js/dashboard.js"></script>
     <!-- End custom js for this page -->
+    <script src="https://cdn.datatables.net/1.11.5/js/jquery.dataTables.min.js"></script>
+<script src="https://cdn.datatables.net/1.11.5/js/dataTables.bootstrap4.min.js"></script>
+    {{-- JS Custom Inline --}}
+    <script>
+      $(document).ready(function() {
+        $('#productTable').DataTable({
+          paging: true,       // Enable pagination
+          searching: true,    // Enable search box
+          ordering: true,     // Enable sorting
+          info: true,         // Show table information
+          responsive: true    // Enable responsive mode
+        });
+      });
+    </script>
   </body>
 </html>

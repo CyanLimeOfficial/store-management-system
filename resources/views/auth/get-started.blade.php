@@ -26,15 +26,12 @@
       <!-- partial:partials/_navbar.html -->
       <nav class="navbar default-layout-navbar col-lg-12 col-12 p-0 fixed-top d-flex flex-row">
         <div class="navbar-brand-wrapper d-flex align-items-center">
-          <a class="navbar-brand brand-logo" href="index.html">
-            <img src="assets/images/logo.svg" alt="logo" class="logo-dark" />
-          </a>
-          <a class="navbar-brand brand-logo-mini" href="index.html"><img src="assets/images/logo-mini.svg" alt="logo" /></a>
+          <h3 class="mb-0 font-weight-medium d-none d-lg-flex" style="color:aliceblue">GET STARTED!</h3>
         </div>
         <div class="navbar-menu-wrapper d-flex align-items-center flex-grow-1">
             <h5 class="mb-0 font-weight-medium d-none d-lg-flex">Store Inventory Management System</h5>
           <ul class="navbar-nav navbar-nav-right ml-auto">
-            <h5 class="mb-0 font-weight-medium d-none d-lg-flex">GET STARTED!</h5>
+
           </ul>
           <button class="navbar-toggler navbar-toggler-right d-lg-none align-self-center" type="button" data-toggle="offcanvas">
             <span class="icon-menu"></span>
@@ -50,33 +47,33 @@
               <span class="nav-link">Dashboard</span>
             </li>
             <li class="nav-item">
-              <a class="nav-link" href="index.html">
+              <a class="nav-link"  href="#" onclick="showStoreAlert(event)">
                 <span class="menu-title">Dashboard</span>
                 <i class="icon-screen-desktop menu-icon"></i>
               </a>
             </li>
             <li class="nav-item nav-category"><span class="nav-link">Manage</span></li>
             <li class="nav-item">
-              <a class="nav-link" href="pages/icons/simple-line-icons.html">
+              <a class="nav-link"   href="#" onclick="showStoreAlert(event)">
                 <span class="menu-title">Inventory</span>
                 <i class="icon-layers menu-icon"></i>
               </a>
             </li>
             <li class="nav-item">
-              <a class="nav-link" href="pages/forms/basic_elements.html">
+              <a class="nav-link"   href="#" onclick="showStoreAlert(event)">
                 <span class="menu-title">Store Details</span>
                 <i class="icon-book-open menu-icon"></i>
               </a>
             </li>
             <li class="nav-item nav-category"><span class="nav-link">Extras</span></li>
             <li class="nav-item">
-              <a class="nav-link" href="pages/icons/simple-line-icons.html">
+              <a class="nav-link"   href="#" onclick="showStoreAlert(event)">
                 <span class="menu-title">Debts</span>
                 <i class="icon-wallet menu-icon"></i>
               </a>
             </li>
             <li class="nav-item">
-              <a class="nav-link" href="pages/icons/simple-line-icons.html">
+              <a class="nav-link"  href="#" onclick="showStoreAlert(event)">
                 <span class="menu-title">POS</span>
                 <i class="icon-basket-loaded menu-icon"></i>
               </a>
@@ -159,6 +156,19 @@
         const fileName = this.files.length > 0 ? this.files[0].name : '';
         document.getElementById('fileName').value = fileName;
       });
+    </script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script>
+      function showStoreAlert(event) {
+        event.preventDefault();
+
+        Swal.fire({
+          title: 'Store Required',
+          text: 'You need to create your store information before you proceed.',
+          icon: 'warning',
+          confirmButtonText: 'OK'
+        });
+      }
     </script>
     {{-- End Inline JS --}}
   </body>
