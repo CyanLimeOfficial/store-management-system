@@ -15,9 +15,8 @@
     <link rel="stylesheet" href="assets/vendors/chartist/chartist.min.css">
     <!-- End plugin css for this page -->
     <!-- inject:css -->
-<!-- Add these right before your closing </body> tag or in your scripts section -->
-<link rel="stylesheet" href="https://cdn.datatables.net/1.11.5/css/dataTables.bootstrap4.min.css">
-
+    <link rel="stylesheet" href="https://cdn.datatables.net/1.11.5/css/dataTables.bootstrap4.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <!-- endinject -->
     <!-- Layout styles -->
     <link rel="stylesheet" href="assets/css/style.css">
@@ -165,7 +164,9 @@
                       <button type="button" class="btn px-0"><i class="icon-folder mr-2"></i>Add Debitor</button>
                     </div>
                     <div class="col-sm-6 col-md-3 p-3 text-center btn-wrapper">
-                      <button type="button" class="btn px-0"><i class="icon-book-open mr-2"></i>Change Store Name</button>
+                      <button type="button" class="btn px-0" data-toggle="modal" data-target="#changeStoreNameModal">
+                        <i class="icon-book-open mr-2"></i>Change Store Name
+                      </button>
                     </div>
                   </div>
                 </div>
@@ -268,40 +269,72 @@
     </div>
     <!-- container-scroller -->
     {{-- Modal Panel --}}
-    <div class="modal fade" id="productModal" tabindex="-1" role="dialog" aria-labelledby="productModalLabel" aria-hidden="true">
-      <div class="modal-dialog modal-md" role="document">
-        <div class="modal-content">
-          <div class="modal-header">
-            <h5 class="modal-title">Search Products</h5>
-          </div>
-          <div class="modal-body">
-            <div class="table-responsive">
-              <table class="table table-bordered table-hover table-striped" id="productTable">
-                <thead class="thead-light">
-                  <tr>
-                    <th>Product Name</th>
-                    <th>Category</th>
-                    <th>Price</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  @foreach($products as $product)
-                  <tr>
-                    <td>{{ $product->product_name }}</td>
-                    <td>{{ $product->category }}</td>
-                    <td>{{ number_format($product->price, 2) }}</td>
-                  </tr>
-                  @endforeach
-                </tbody>
-              </table>
+      {{-- See Products --}}
+      <div class="modal fade" id="productModal" tabindex="-1" role="dialog" aria-labelledby="productModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-md" role="document">
+          <div class="modal-content">
+            <div class="modal-header">
+              <h5 class="modal-title">Search Products</h5>
             </div>
-          </div>
-          <div class="modal-footer">
-            <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+            <div class="modal-body">
+              <div class="table-responsive">
+                <table class="table table-bordered table-hover table-striped" id="productTable">
+                  <thead class="thead-light">
+                    <tr>
+                      <th>Product Name</th>
+                      <th>Category</th>
+                      <th>Price</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    @foreach($products as $product)
+                    <tr>
+                      <td>{{ $product->product_name }}</td>
+                      <td>{{ $product->category }}</td>
+                      <td>{{ number_format($product->price, 2) }}</td>
+                    </tr>
+                    @endforeach
+                  </tbody>
+                </table>
+              </div>
+            </div>
+            <div class="modal-footer">
+              <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+            </div>
           </div>
         </div>
       </div>
-    </div>
+      <!-- Change Store Name Modal -->
+      <div class="modal fade" id="changeStoreNameModal" tabindex="-1" role="dialog" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered" role="document">
+          <div class="modal-content">
+            <div class="modal-header">
+              <h5 class="modal-title">Change Store Name</h5>
+              <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                <span aria-hidden="true">&times;</span>
+              </button>
+            </div>
+            <form id="storeNameForm">
+              @csrf
+              <div class="modal-body">
+                <div class="form-group">
+                  <label for="currentStoreName">Current Store Name</label>
+                  <input type="text" class="form-control" value="{{ $store->store_name }}" id="currentStoreName" readonly>
+                </div>
+                <div class="form-group">
+                  <label for="newStoreName">New Store Name</label>
+                  <input type="text" class="form-control" id="newStoreName" name="new_store_name" required minlength="3" maxlength="255">
+                  <small class="form-text text-muted">Minimum 3 characters</small>
+                </div>
+              </div>
+              <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
+                <button type="submit" class="btn btn-primary">Save Changes</button>
+              </div>
+            </form>
+          </div>
+        </div>
+      </div>
     <!-- plugins:js -->
     <script src="assets/vendors/js/vendor.bundle.base.js"></script>
     <!-- endinject -->
@@ -319,7 +352,7 @@
     <script src="assets/js/dashboard.js"></script>
     <!-- End custom js for this page -->
     <script src="https://cdn.datatables.net/1.11.5/js/jquery.dataTables.min.js"></script>
-<script src="https://cdn.datatables.net/1.11.5/js/dataTables.bootstrap4.min.js"></script>
+    <script src="https://cdn.datatables.net/1.11.5/js/dataTables.bootstrap4.min.js"></script>
     {{-- JS Custom Inline --}}
     <script>
       $(document).ready(function() {
@@ -332,5 +365,60 @@
         });
       });
     </script>
+    {{-- Change store name --}}
+    <script>
+      $(document).ready(function() {
+          $('#storeNameForm').on('submit', function(e) {
+              e.preventDefault();
+
+              Swal.fire({
+                  title: 'Are you sure?',
+                  text: "Do you want to change your store name?",
+                  icon: 'warning',
+                  showCancelButton: true,
+                  confirmButtonColor: '#3085d6',
+                  cancelButtonColor: '#d33',
+                  confirmButtonText: 'Yes, change it!'
+              }).then((result) => {
+                  if (result.isConfirmed) {
+                      $.ajax({
+                          url: "{{ route('store.updateName') }}",
+                          method: 'POST',
+                          data: $('#storeNameForm').serialize(),
+                          success: function(response) {
+                              if (response.success) {
+                                  $('#changeStoreNameModal').modal('hide');
+                                  Swal.fire({
+                                      icon: 'success',
+                                      title: 'Success',
+                                      text: response.message,
+                                      timer: 2000,
+                                      showConfirmButton: false
+                                  });
+                                  setTimeout(function() {
+                                      location.reload();
+                                  }, 2000);
+                              } else {
+                                  Swal.fire({
+                                      icon: 'info',
+                                      title: 'Notice',
+                                      text: response.message
+                                  });
+                              }
+                          },
+                          error: function(xhr) {
+                              Swal.fire({
+                                  icon: 'error',
+                                  title: 'Error',
+                                  text: xhr.responseJSON?.message || 'Something went wrong'
+                              });
+                          }
+                      });
+                  }
+              });
+          });
+      });
+    </script>
+
   </body>
 </html>

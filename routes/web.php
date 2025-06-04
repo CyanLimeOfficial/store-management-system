@@ -4,6 +4,7 @@ use Illuminate\Support\Facades\Route;
 // Import ROUTES
 use App\Http\Controllers\Auth\LoginController;
 use App\Http\Controllers\GetStarted;
+use App\Http\Controllers\Home;
 use App\Http\Controllers\Products_Inventory;
 // Import Middleware
 use App\Http\Middleware\CheckStoreExist;
@@ -35,6 +36,11 @@ Route::middleware(['auth', 'check.store_info'])->group(function () {
     Route::get('/home', function () {
         return view('dashboard.index');
     }); 
+    // Add these new routes for store name change
+    Route::post('/store/update-name', [Home::class, 'updateStoreName'])->name('store.updateName');
+
+
+
     Route::get('/inventory/add-products', function () {
         return view('dashboard.inventory_add');
     }); 
