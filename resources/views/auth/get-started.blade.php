@@ -68,7 +68,7 @@
             <li class="nav-item nav-category"><span class="nav-link">Extras</span></li>
             <li class="nav-item">
               <a class="nav-link"   href="#" onclick="showStoreAlert(event)">
-                <span class="menu-title">Debts</span>
+                <span class="menu-title">Transactions</span>
                 <i class="icon-wallet menu-icon"></i>
               </a>
             </li>

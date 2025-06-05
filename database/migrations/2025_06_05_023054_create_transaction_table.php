@@ -11,13 +11,11 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('products_inventory', function (Blueprint $table) {
+        Schema::create('transactions', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('store_id')->constrained('store_info')->onDelete('cascade');
-            $table->string('product_name')->unique();
-            $table->float('price');
-            $table->integer('quantity')->default('0');
-            $table->string('category');
+            $table->foreignId('costumer_store_id')->constrained('store_info')->onDelete('cascade');
+            $table->string('customer_name');
+            $table->enum('transaction_class', ['purchase', 'debt' ])->default('purchase');
             $table->timestamps();
         });
     }
@@ -27,6 +25,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('products_inventory');
+        Schema::dropIfExists('transaction');
     }
 };

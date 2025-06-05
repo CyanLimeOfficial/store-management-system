@@ -128,20 +128,26 @@
         <!-- partial -->
         <div class="main-panel">
           <div class="content-wrapper">
-            @if(session('success'))
-            <div class="row purchace-popup">
-              <div class="col-12 stretch-card grid-margin">
-                <div class="card card-secondary">
-                  <span class="card-body d-lg-flex align-items-center">
-                    <p class="mb-lg-0">Store Information has been recorded.</p>
-                    <button class="close popup-dismiss ml-2" onclick="this.closest('.purchace-popup').style.display='none'">
-                      <span aria-hidden="true">&times;</span>
-                    </button>
-                  </span>
-                </div>
-              </div>
-            </div>
-            @endif
+              @if(session('success') || session('error'))
+                  <div class="row purchace-popup">
+                      <div class="col-12 stretch-card grid-margin">
+                          <div class="card card-{{ session('error') ? 'danger' : 'secondary' }}">
+                              <span class="card-body d-lg-flex align-items-center">
+                                  <p class="mb-lg-0">
+                                      @if(session('success'))
+                                          {{ session('success') }}
+                                      @elseif(session('error'))
+                                          {{ session('error') }}
+                                      @endif
+                                  </p>
+                                  <button class="close popup-dismiss ml-2" onclick="this.closest('.purchace-popup').style.display='none'">
+                                      <span aria-hidden="true">&times;</span>
+                                  </button>
+                              </span>
+                          </div>
+                      </div>
+                  </div>
+              @endif
             <div class="row quick-action-toolbar">
               <div class="col-md-12 grid-margin">
                 <div class="card">
@@ -151,9 +157,9 @@
                   </div>
                   <div class="d-md-flex row m-0 quick-action-btns" role="group" aria-label="Quick action buttons">
                     <div class="col-sm-6 col-md-3 p-3 text-center btn-wrapper">
-                      <a href="/inventory/add-products" class="btn px-0">
-                        <i class="icon-magnifier-add mr-2"></i> Add Product
-                      </a>
+                        <button type="button" class="btn px-0" data-toggle="modal" data-target="#addProductModal">
+                            <i class="icon-magnifier-add mr-2"></i> Add Product
+                        </button>
                     </div>
                     <div class="col-sm-6 col-md-3 p-3 text-center btn-wrapper">
                       <button type="button" class="btn px-0" data-toggle="modal" data-target="#productModal">
@@ -161,7 +167,7 @@
                       </button>
                     </div>
                     <div class="col-sm-6 col-md-3 p-3 text-center btn-wrapper">
-                      <button type="button" class="btn px-0"><i class="icon-folder mr-2"></i>Add Debitor</button>
+                      <button type="button" class="btn px-0"><i class="icon-folder mr-2"></i>See Transactions</button>
                     </div>
                     <div class="col-sm-6 col-md-3 p-3 text-center btn-wrapper">
                       <button type="button" class="btn px-0" data-toggle="modal" data-target="#changeStoreNameModal">
@@ -335,6 +341,48 @@
           </div>
         </div>
       </div>
+      {{-- Add Products Modal --}}
+      <!-- Add Product Modal -->
+      <div class="modal fade" id="addProductModal" tabindex="-1" role="dialog" aria-labelledby="addProductModalLabel" aria-hidden="true">
+          <div class="modal-dialog" role="document">
+              <div class="modal-content">
+                  <div class="modal-header">
+                      <h5 class="modal-title" id="addProductModalLabel">Add products to your store!</h5>
+                      <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                          <span aria-hidden="true">&times;</span>
+                      </button>
+                  </div>
+                  <div class="modal-body">
+                      <form class="forms-sample" method="POST" action="{{ route('add.product') }}" enctype="multipart/form-data" id="addProductForm">
+                          @csrf
+                          <div class="form-group">
+                              <label for="store_id">Store Reference Number</label>
+                              <input type="text" class="form-control" name="store_id" value="{{ $store->id }}" readonly>
+                          </div>
+                          <div class="form-group">
+                              <label for="product_name">Product's Name</label>
+                              <input type="text" class="form-control" name="product_name" required>
+                          </div>
+                          <div class="form-group">
+                              <label for="price">Price</label>
+                              <input type="number" class="form-control" name="price" required>
+                          </div>
+                          <div class="form-group">
+                              <label for="category">Category</label>
+                              <select class="form-control" name="category" required>
+                                  <option value="Snacks">Snacks</option>
+                                  <option value="Beverages">Beverages</option>
+                              </select>
+                          </div>
+                      </form>
+                  </div>
+                  <div class="modal-footer">
+                      <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                      <button type="submit" class="btn btn-primary" form="addProductForm">Submit</button>
+                  </div>
+              </div>
+          </div>
+      </div>
     <!-- plugins:js -->
     <script src="assets/vendors/js/vendor.bundle.base.js"></script>
     <!-- endinject -->
@@ -353,72 +401,106 @@
     <!-- End custom js for this page -->
     <script src="https://cdn.datatables.net/1.11.5/js/jquery.dataTables.min.js"></script>
     <script src="https://cdn.datatables.net/1.11.5/js/dataTables.bootstrap4.min.js"></script>
-    {{-- JS Custom Inline --}}
-    <script>
-      $(document).ready(function() {
-        $('#productTable').DataTable({
-          paging: true,       // Enable pagination
-          searching: true,    // Enable search box
-          ordering: true,     // Enable sorting
-          info: true,         // Show table information
-          responsive: true    // Enable responsive mode
+      {{-- JS Custom Inline --}}
+      <script>
+        $(document).ready(function() {
+          $('#productTable').DataTable({
+            paging: true,       // Enable pagination
+            searching: true,    // Enable search box
+            ordering: true,     // Enable sorting
+            info: true,         // Show table information
+            responsive: true    // Enable responsive mode
+          });
         });
-      });
-    </script>
-    {{-- Change store name --}}
-    <script>
-      $(document).ready(function() {
-          $('#storeNameForm').on('submit', function(e) {
-              e.preventDefault();
+      </script>
+      {{-- Change store name --}}
+      <script>
+        $(document).ready(function() {
+            $('#storeNameForm').on('submit', function(e) {
+                e.preventDefault();
 
-              Swal.fire({
-                  title: 'Are you sure?',
-                  text: "Do you want to change your store name?",
-                  icon: 'warning',
-                  showCancelButton: true,
-                  confirmButtonColor: '#3085d6',
-                  cancelButtonColor: '#d33',
-                  confirmButtonText: 'Yes, change it!'
-              }).then((result) => {
-                  if (result.isConfirmed) {
-                      $.ajax({
-                          url: "{{ route('store.updateName') }}",
-                          method: 'POST',
-                          data: $('#storeNameForm').serialize(),
-                          success: function(response) {
-                              if (response.success) {
-                                  $('#changeStoreNameModal').modal('hide');
-                                  Swal.fire({
-                                      icon: 'success',
-                                      title: 'Success',
-                                      text: response.message,
-                                      timer: 2000,
-                                      showConfirmButton: false
-                                  });
-                                  setTimeout(function() {
-                                      location.reload();
-                                  }, 2000);
-                              } else {
-                                  Swal.fire({
-                                      icon: 'info',
-                                      title: 'Notice',
-                                      text: response.message
-                                  });
-                              }
-                          },
-                          error: function(xhr) {
-                              Swal.fire({
-                                  icon: 'error',
-                                  title: 'Error',
-                                  text: xhr.responseJSON?.message || 'Something went wrong'
-                              });
-                          }
-                      });
-                  }
+                Swal.fire({
+                    title: 'Are you sure?',
+                    text: "Do you want to change your store name?",
+                    icon: 'warning',
+                    showCancelButton: true,
+                    confirmButtonColor: '#3085d6',
+                    cancelButtonColor: '#d33',
+                    confirmButtonText: 'Yes, change it!'
+                }).then((result) => {
+                    if (result.isConfirmed) {
+                        $.ajax({
+                            url: "{{ route('store.updateName') }}",
+                            method: 'POST',
+                            data: $('#storeNameForm').serialize(),
+                            success: function(response) {
+                                if (response.success) {
+                                    $('#changeStoreNameModal').modal('hide');
+                                    Swal.fire({
+                                        icon: 'success',
+                                        title: 'Success',
+                                        text: response.message,
+                                        timer: 2000,
+                                        showConfirmButton: false
+                                    });
+                                    setTimeout(function() {
+                                        location.reload();
+                                    }, 2000);
+                                } else {
+                                    Swal.fire({
+                                        icon: 'info',
+                                        title: 'Notice',
+                                        text: response.message
+                                    });
+                                }
+                            },
+                            error: function(xhr) {
+                                Swal.fire({
+                                    icon: 'error',
+                                    title: 'Error',
+                                    text: xhr.responseJSON?.message || 'Something went wrong'
+                                });
+                            }
+                        });
+                    }
+                });
+            });
+        });
+      </script>
+      {{-- Add Product Modal --}}
+      <script>
+          $(document).ready(function() {
+              // Handle form submission
+              $('#addProductForm').on('submit', function(e) {
+                  e.preventDefault();
+                  
+                  $.ajax({
+                      url: $(this).attr('action'),
+                      method: 'POST',
+                      data: $(this).serialize(),
+                      success: function(response) {
+                          // Close the modal
+                          $('#addProductModal').modal('hide');
+                          
+                          // Show success message (you can use toast or alert)
+                          alert('Product added successfully!');
+                          
+                          // Optionally refresh the page or update the product list
+                          location.reload();
+                      },
+                      error: function(xhr) {
+                          // Show error message
+                          alert('Error: ' + xhr.responseJSON.message || 'Something went wrong');
+                      }
+                  });
+              });
+              
+              // Reset form when modal is closed
+              $('#addProductModal').on('hidden.bs.modal', function () {
+                  $('#addProductForm')[0].reset();
               });
           });
-      });
-    </script>
-
+      </script>
+    
   </body>
 </html>
