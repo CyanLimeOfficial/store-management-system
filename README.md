@@ -1,1 +1,1 @@
-Sari sari store management system fuldsadasdl 
+Sari sari store management systemddsdfsf
