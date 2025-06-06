@@ -150,119 +150,51 @@
               @endif
             <div class="row quick-action-toolbar">
               <div class="col-md-12 grid-margin">
-                <div class="card">
-                  <div class="card-header d-block d-md-flex">
-                    <h5 class="mb-0">Quick Actions</h5>
-                    <p class="ml-auto mb-0">Use this easy?<i class="icon-bulb"></i></p>
-                  </div>
-                  <div class="d-md-flex row m-0 quick-action-btns" role="group" aria-label="Quick action buttons">
-                    <div class="col-sm-6 col-md-3 p-3 text-center btn-wrapper">
-                        <button type="button" class="btn px-0" data-toggle="modal" data-target="#addProductModal">
-                            <i class="icon-magnifier-add mr-2"></i> Add Product
-                        </button>
-                    </div>
-                    <div class="col-sm-6 col-md-3 p-3 text-center btn-wrapper">
-                      <button type="button" class="btn px-0" data-toggle="modal" data-target="#productModal">
-                        <i class="icon-eye mr-2"></i> See products
-                      </button>
-                    </div>
-                    <div class="col-sm-6 col-md-3 p-3 text-center btn-wrapper">
-                      <button type="button" class="btn px-0"><i class="icon-folder mr-2"></i>See Debts</button>
-                    </div>
-                    <div class="col-sm-6 col-md-3 p-3 text-center btn-wrapper">
-                      <button type="button" class="btn px-0" data-toggle="modal" data-target="#changeStoreNameModal">
-                        <i class="icon-book-open mr-2"></i>Change Store Name
-                      </button>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
-            <div class="row">
-              <div class="col-md-12 justify-content-center grid-margin align-items-center stretch-card">
-                <div class="card">
+              <div class="card">
                   <div class="card-body">
-                    <h4 class="card-title">Status</h4>
-                    <p>As of {{now()->format('F Y')}}</p>
-                    <div class="aligner-wrapper">
-                      <canvas id="earningChart" height="90"></canvas>
-                      <div class="wrapper d-flex flex-column justify-content-center absolute absolute-center">
-                        <h2 class="text-center mb-0 font-weight-bold">300</h2>
-                        <small class="d-block text-center text-muted  font-weight-semibold mb-0">Total Earning</small>
-                      </div>
-                    </div>
-                    <div class="wrapper mt-4 d-flex flex-wrap align-items-center">
-                      <div class="d-flex">
-                        <span class="square-indicator bg-danger ml-2"></span>
-                        <p class="mb-0 ml-2">Sold</p>
-                      </div>
-                      <div class="d-flex">
-                        <span class="square-indicator bg-success ml-2"></span>
-                        <p class="mb-0 ml-2">Debts</p>
-                      </div>
-                    </div>
+                      <h4 class="card-title">Products Inventory</h4>
+                      <table class="table table-hover" id="inventory">
+                          <thead>
+                              <tr>
+                                  <th>Product Name</th>
+                                  <th>Price</th>
+                                  <th>Quantity</th>
+                                  <th>Category</th>
+                                  <th>Status</th>
+                              </tr>
+                          </thead>
+                          <tbody>
+                              @foreach($products as $product)
+                              <tr>
+                                  <td>{{ $product->product_name }}</td>
+                                  <td>₱{{ number_format($product->price, 2) }}</td>
+                                  <td class="{{ $product->quantity > 0 ? 'text-success' : 'text-danger' }}">
+                                      {{ $product->quantity }}
+                                      @if($product->quantity > 0)
+                                          <i class="icon-arrow-up-circle"></i>
+                                      @else
+                                          <i class="icon-arrow-down-circle"></i>
+                                      @endif
+                                  </td>
+                                  <td>{{ ucfirst($product->category) }}</td>
+                                  <td>
+                                      @if($product->quantity > 10)
+                                          <label class="badge badge-success">In Stock</label>
+                                      @elseif($product->quantity > 0)
+                                          <label class="badge badge-warning">Low Stock</label>
+                                      @else
+                                          <label class="badge badge-danger">Out of Stock</label>
+                                      @endif
+                                  </td>
+                              </tr>
+                              @endforeach
+                          </tbody>
+                      </table>
+                      <a href="/inventory/add-products" class="btn btn-primary btn-fw">
+                          <i class="icon-plus"></i> Add Product
+                      </a>
                   </div>
-                </div>
               </div>
-            </div>
-            <!-- Quick Action Toolbar Starts-->
-
-            <!-- Quick Action Toolbar Ends-->
-            <div class="row">
-              <div class="col-md-12 grid-margin">
-                <div class="card">
-                  <div class="card-body">
-                    <div class="row">
-                      <div class="col-md-12">
-                        <div class="d-sm-flex align-items-baseline report-summary-header">
-                          <h5 class="font-weight-semibold">Report Summary</h5> <span class="ml-auto">Updated Report</span> <button class="btn btn-icons border-0 p-2"><i class="icon-refresh"></i></button>
-                        </div>
-                      </div>
-                    </div>
-                    <div class="row report-inner-cards-wrapper">
-                      <div class=" col-md -6 col-xl report-inner-card">
-                        <div class="inner-card-text">
-                          <span class="report-title">DEBT</span>
-                          <h4>$32123</h4>
-                          <span class="report-count"> 2 Reports</span>
-                        </div>
-                        <div class="inner-card-icon bg-success">
-                          <i class="icon-rocket"></i>
-                        </div>
-                      </div>
-                      <div class="col-md-6 col-xl report-inner-card">
-                        <div class="inner-card-text">
-                          <span class="report-title">PURCHASE</span>
-                          <h4>95,458</h4>
-                          <span class="report-count"> 3 Reports</span>
-                        </div>
-                        <div class="inner-card-icon bg-danger">
-                          <i class="icon-briefcase"></i>
-                        </div>
-                      </div>
-                      <div class="col-md-6 col-xl report-inner-card">
-                        <div class="inner-card-text">
-                          <span class="report-title">QUANTITY</span>
-                          <h4>2650</h4>
-                          <span class="report-count"> 5 Reports</span>
-                        </div>
-                        <div class="inner-card-icon bg-warning">
-                          <i class="icon-globe-alt"></i>
-                        </div>
-                      </div>
-                      <div class="col-md-6 col-xl report-inner-card">
-                        <div class="inner-card-text">
-                          <span class="report-title">TRANSACTION</span>
-                          <h4>.</h4>
-                          <span class="report-count"> 9 Reports </span>
-                        </div>
-                        <div class="inner-card-icon bg-primary">
-                          <i class="icon-diamond"></i>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                </div>
               </div>
             </div>
           </div>
@@ -297,7 +229,7 @@
                     <tr>
                       <td>{{ $product->product_name }}</td>
                       <td>{{ $product->category }}</td>
-                      <td>₱{{ number_format($product->price, 2) }}</td>
+                      <td>{{ number_format($product->price, 2) }}</td>
                     </tr>
                     @endforeach
                   </tbody>
@@ -342,6 +274,7 @@
         </div>
       </div>
       {{-- Add Products Modal --}}
+      <!-- Add Product Modal -->
       <div class="modal fade" id="addProductModal" tabindex="-1" role="dialog" aria-labelledby="addProductModalLabel" aria-hidden="true">
           <div class="modal-dialog" role="document">
               <div class="modal-content">
@@ -403,7 +336,7 @@
       {{-- JS Custom Inline --}}
       <script>
         $(document).ready(function() {
-          $('#productTable').DataTable({
+          $('#inventory').DataTable({
             paging: true,       // Enable pagination
             searching: true,    // Enable search box
             ordering: true,     // Enable sorting
@@ -413,93 +346,5 @@
         });
       </script>
       {{-- Change store name --}}
-      <script>
-        $(document).ready(function() {
-            $('#storeNameForm').on('submit', function(e) {
-                e.preventDefault();
-
-                Swal.fire({
-                    title: 'Are you sure?',
-                    text: "Do you want to change your store name?",
-                    icon: 'warning',
-                    showCancelButton: true,
-                    confirmButtonColor: '#3085d6',
-                    cancelButtonColor: '#d33',
-                    confirmButtonText: 'Yes, change it!'
-                }).then((result) => {
-                    if (result.isConfirmed) {
-                        $.ajax({
-                            url: "{{ route('store.updateName') }}",
-                            method: 'POST',
-                            data: $('#storeNameForm').serialize(),
-                            success: function(response) {
-                                if (response.success) {
-                                    $('#changeStoreNameModal').modal('hide');
-                                    Swal.fire({
-                                        icon: 'success',
-                                        title: 'Success',
-                                        text: response.message,
-                                        timer: 2000,
-                                        showConfirmButton: false
-                                    });
-                                    setTimeout(function() {
-                                        location.reload();
-                                    }, 2000);
-                                } else {
-                                    Swal.fire({
-                                        icon: 'info',
-                                        title: 'Notice',
-                                        text: response.message
-                                    });
-                                }
-                            },
-                            error: function(xhr) {
-                                Swal.fire({
-                                    icon: 'error',
-                                    title: 'Error',
-                                    text: xhr.responseJSON?.message || 'Something went wrong'
-                                });
-                            }
-                        });
-                    }
-                });
-            });
-        });
-      </script>
-      {{-- Add Product Modal --}}
-      <script>
-          $(document).ready(function() {
-              // Handle form submission
-              $('#addProductForm').on('submit', function(e) {
-                  e.preventDefault();
-                  
-                  $.ajax({
-                      url: $(this).attr('action'),
-                      method: 'POST',
-                      data: $(this).serialize(),
-                      success: function(response) {
-                          // Close the modal
-                          $('#addProductModal').modal('hide');
-                          
-                          // Show success message (you can use toast or alert)
-                          alert('Product added successfully!');
-                          
-                          // Optionally refresh the page or update the product list
-                          location.reload();
-                      },
-                      error: function(xhr) {
-                          // Show error message
-                          alert('Error: ' + xhr.responseJSON.message || 'Something went wrong');
-                      }
-                  });
-              });
-              
-              // Reset form when modal is closed
-              $('#addProductModal').on('hidden.bs.modal', function () {
-                  $('#addProductForm')[0].reset();
-              });
-          });
-      </script>
-    
   </body>
 </html>

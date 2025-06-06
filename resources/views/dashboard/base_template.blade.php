@@ -6,26 +6,31 @@
     <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
     <title>Stellar Admin</title>
     <!-- plugins:css -->
-    <link rel="stylesheet" href="{{ asset('assets/vendors/simple-line-icons/css/simple-line-icons.css') }}">
-    <link rel="stylesheet" href="{{ asset('assets/vendors/flag-icon-css/css/flag-icon.min.css') }}">
-    <link rel="stylesheet" href="{{ asset('assets/vendors/css/vendor.bundle.base.css') }}">
+    <link rel="stylesheet" href="assets/vendors/simple-line-icons/css/simple-line-icons.css">
+    <link rel="stylesheet" href="assets/vendors/flag-icon-css/css/flag-icon.min.css">
+    <link rel="stylesheet" href="assets/vendors/css/vendor.bundle.base.css">
     <!-- endinject -->
     <!-- Plugin css for this page -->
-    <link rel="stylesheet" href="{{ asset('assets/vendors/daterangepicker/daterangepicker.css') }}">
-    <link rel="stylesheet" href="{{ asset('assets/vendors/chartist/chartist.min.css') }}">
+    <link rel="stylesheet" href="assets/vendors/daterangepicker/daterangepicker.css">
+    <link rel="stylesheet" href="assets/vendors/chartist/chartist.min.css">
     <!-- End plugin css for this page -->
     <!-- inject:css -->
+    <link rel="stylesheet" href="https://cdn.datatables.net/1.11.5/css/dataTables.bootstrap4.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <!-- endinject -->
     <!-- Layout styles -->
-    <link rel="stylesheet" href="{{ asset('assets/css/style.css') }}">
+    <link rel="stylesheet" href="assets/css/style.css">
     <!-- End layout styles -->
-    <link rel="shortcut icon" href="{{ asset('assets/images/favicon.png') }}" />
-
+    <link rel="shortcut icon" href="assets/images/favicon.png" />
     {{-- PHP LOGICS --}}
       @php
         use App\Models\StoreInfo;
+        use App\Models\Product_Inventory;
         $store = StoreInfo::where('user_id', auth()->id())->first();
+        $products = [];
+        $products = Product_Inventory::where('store_id', $store->id)->get();
       @endphp
+
   </head>
   <body>
     <div class="container-scroller">
@@ -123,61 +128,35 @@
         <!-- partial -->
         <div class="main-panel">
           <div class="content-wrapper">
-              <div class="col-12 grid-margin stretch-card">
-                <div class="card">
-                  @if(session('success'))
-                    <div class="row purchace-popup">
+              @if(session('success') || session('error'))
+                  <div class="row purchace-popup">
                       <div class="col-12 stretch-card grid-margin">
-                        <div class="card card-secondary">
-                          <span class="card-body d-lg-flex align-items-center">
-                            <p class="mb-lg-0">Store Product has been recorded.</p>
-                            <button class="close popup-dismiss ml-2" onclick="this.closest('.purchace-popup').style.display='none'">
-                              <span aria-hidden="true">&times;</span>
-                            </button>
-                          </span>
-                        </div>
-                      </div>
-                    </div>
-                  @endif
-                  <div class="card-body">
-                    <h4 class="card-title">Add products to your store!</h4>
-                    <form class="forms-sample" method="POST" action="{{ route('add.product') }}" enctype="multipart/form-data">
-                     @csrf
-                      <div class="form-group">
-                        <label for="store_id">Store Reference Number</label>
-                        <input type="text" class="form-control" name="store_id" value="{{ $store->id }}" readonly>
-                      </div>
-                      <div class="form-group">
-                        <label for="product_name">Products's Name</label>
-                        <input type="text" class="form-control" name="product_name">
-                      </div>
-                      <div class="form-group">
-                        <label for="price">Price</label>
-                        <input type="number" class="form-control" name="price">
-                      </div>
-                      <div class="form-group">
-                        <label for="category">Category</label>
-                        <select class="form-control" name="category">
-                          <option>Snacks</option>
-                          <option>Beverages</option>
-                        </select>
-                      </div>
-                      <div class="d-flex justify-content-between">
-                          <div>
-                              <button type="submit" class="btn btn-primary mr-2">Submit</button>
-                              <button type="reset" class="btn btn-secondary mr-2 text-black" style="color: black; !important">Clear</button>
+                          <div class="card card-{{ session('error') ? 'danger' : 'secondary' }}">
+                              <span class="card-body d-lg-flex align-items-center">
+                                  <p class="mb-lg-0">
+                                      @if(session('success'))
+                                          {{ session('success') }}
+                                      @elseif(session('error'))
+                                          {{ session('error') }}
+                                      @endif
+                                  </p>
+                                  <button class="close popup-dismiss ml-2" onclick="this.closest('.purchace-popup').style.display='none'">
+                                      <span aria-hidden="true">&times;</span>
+                                  </button>
+                              </span>
                           </div>
-                          <a href="/inventory" class="btn btn-danger btn-fw">
-                              <i class="icon-arrow-left"></i> Back
-                          </a>
                       </div>
-                      @if(session('error'))
-                          <div class="alert alert-danger mt-2">{{ session('error') }}</div>
-                      @endif
-                    </form>
                   </div>
-                </div>
+              @endif
+            <div class="row quick-action-toolbar">
+              <div class="col-md-12 grid-margin">
+              <div class="card">
+                  <div class="card-body">
+                      <h4 class="card-title">Products Inventory</h4>
+                  </div>
               </div>
+              </div>
+            </div>
           </div>
           <!-- content-wrapper ends -->
           <!-- partial -->
@@ -187,22 +166,27 @@
       <!-- page-body-wrapper ends -->
     </div>
     <!-- container-scroller -->
+    {{-- Modal Panel --}}
+
     <!-- plugins:js -->
-    <script src="{{ asset('assets/vendors/js/vendor.bundle.base.js') }}"></script>
+    <script src="assets/vendors/js/vendor.bundle.base.js"></script>
     <!-- endinject -->
     <!-- Plugin js for this page -->
-    <script src="{{ asset('assets/vendors/chart.js/Chart.min.js') }}"></script>
-    <script src="{{ asset('assets/vendors/moment/moment.min.js') }}"></script>
-    <script src="{{ asset('assets/vendors/daterangepicker/daterangepicker.js') }}"></script>
-    <script src="{{ asset('assets/vendors/chartist/chartist.min.js') }}"></script>
+    <script src="assets/vendors/chart.js/Chart.min.js"></script>
+    <script src="assets/vendors/moment/moment.min.js"></script>
+    <script src="assets/vendors/daterangepicker/daterangepicker.js"></script>
+    <script src="assets/vendors/chartist/chartist.min.js"></script>
     <!-- End plugin js for this page -->
     <!-- inject:js -->
-    <script src="{{ asset('assets/js/off-canvas.js') }}"></script>
-    <script src="{{ asset('assets/js/misc.js') }}"></script>
+    <script src="assets/js/off-canvas.js"></script>
+    <script src="assets/js/misc.js"></script>
     <!-- endinject -->
     <!-- Custom js for this page -->
-    <script src="{{ asset('assets/js/dashboard.js') }}"></script>
-
+    <script src="assets/js/dashboard.js"></script>
     <!-- End custom js for this page -->
+    <script src="https://cdn.datatables.net/1.11.5/js/jquery.dataTables.min.js"></script>
+    <script src="https://cdn.datatables.net/1.11.5/js/dataTables.bootstrap4.min.js"></script>
+      {{-- JS Custom Inline --}}
+
   </body>
 </html>

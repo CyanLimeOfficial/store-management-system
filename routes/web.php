@@ -40,9 +40,15 @@ Route::middleware(['auth', 'check.store_info'])->group(function () {
     Route::post('/store/update-name', [Home::class, 'updateStoreName'])->name('store.updateName');
 
 
-
+    Route::get('/inventory', function () {
+        return view('dashboard.inventory');
+    }); 
     Route::get('/inventory/add-products', function () {
         return view('dashboard.inventory_add');
+    }); 
+
+    Route::get('/pos', function () {
+        return view('dashboard.pos');
     }); 
 
     // Handle form submission (no need for GET here)
