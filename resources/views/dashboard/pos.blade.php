@@ -623,7 +623,8 @@
                                                       </button>
                                                       <button class="btn btn-success btn-sm" id="payBtn">
                                                           <i class="fas fa-credit-card me-1"></i>Pay
-                                                      </button>
+                                                      </button> 
+                                                      
                                                   </div>
                                               </div>
                                           </div>
