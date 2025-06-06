@@ -1,1 +1,1 @@
-Sari sari store management system full stack
+Sari sari store management system fuldsadasdl 
