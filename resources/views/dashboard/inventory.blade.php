@@ -15,6 +15,7 @@
     <link rel="stylesheet" href="assets/vendors/chartist/chartist.min.css">
     <!-- End plugin css for this page -->
     <!-- inject:css -->
+    <meta name="csrf-token" content="{{ csrf_token() }}">
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <link rel="stylesheet" href="https://cdn.datatables.net/1.11.5/css/dataTables.bootstrap4.min.css">
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
@@ -31,7 +32,29 @@
         $products = [];
         $products = Product_Inventory::where('store_id', $store->id)->get();
       @endphp
+    {{-- CSS --}}
+      <style>
+        .action-bar {
+            transition: all 0.3s ease;
+        }
 
+        .action-bar:hover {
+            background-color: #f0f0f0;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+        }
+
+        .action-bar i:hover {
+            transform: scale(1.1);
+            transition: transform 0.2s ease;
+        }
+
+        /* Tooltip customization */
+        .tooltip-inner {
+            background-color: #333;
+            font-size: 0.85rem;
+            padding: 5px 10px;
+        }
+      </style>
   </head>
   <body>
     <div class="container-scroller">
@@ -149,58 +172,45 @@
                       </div>
                   </div>
               @endif
-            <div class="row quick-action-toolbar">
-              <div class="col-md-12 grid-margin">
-              <div class="card">
-                  <div class="card-body">
-                      <h4 class="card-title">Products Inventory</h4>
-                        <table class="table table-hover" id="inventory">
-                            <thead>
-                                <tr>
-                                    <th>Product Name</th>
-                                    <th>Price</th>
-                                    <th>Quantity</th>
-                                    <th>Category</th>
-                                    <th>Status</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                @foreach($products as $product)
-                                <tr>
-                                    <td>{{ $product->product_name }}</td>
-                                    <td>₱{{ number_format($product->price, 2) }}</td>
-                                    <td class="edit-stock {{ $product->quantity > 0 ? 'text-success' : 'text-danger' }}"
-                                        data-id="{{ $product->id }}"
-                                        data-quantity="{{ $product->quantity }}"
-                                        style="cursor: pointer;">
-                                        {{ $product->quantity }}
-                                        @if($product->quantity > 0)
-                                            <i class="icon-arrow-up-circle"></i>
-                                        @else
-                                            <i class="icon-arrow-down-circle"></i>
-                                        @endif
-                                    </td>
-                                    <td>{{ ucfirst($product->category) }}</td>
-                                    <td>
-                                        @if($product->quantity > 10)
-                                            <label class="badge badge-success">In Stock</label>
-                                        @elseif($product->quantity > 0)
-                                            <label class="badge badge-warning">Low Stock</label>
-                                        @else
-                                            <label class="badge badge-danger">Out of Stock</label>
-                                        @endif
-                                    </td>
-                                </tr>
-                                @endforeach
-                            </tbody>
-                        </table>
-                      <a href="/inventory/add-products" class="btn btn-primary btn-fw">
-                          <i class="icon-plus"></i> Add Product
-                      </a>
-                  </div>
-              </div>
-              </div>
-            </div>
+              <table class="table table-bordered table-hover table-striped" id="inventory">
+                  <thead>
+                      <tr>
+                          <th>Product Name</th>
+                          <th>Price</th>
+                          <th>Quantity</th>
+                          <th>Category</th>
+                          <th>Status</th>
+                          <th>Action</th> <!-- Added Action column -->
+                      </tr>
+                  </thead>
+                  <tbody>
+                      @foreach($products as $product)
+                      <tr class="product-row" data-id="{{ $product->id }}">
+                          <td>{{ $product->product_name }}</td>
+                          <td>₱{{ number_format($product->price, 2) }}</td>
+                          <td class="{{ $product->quantity > 0 ? 'text-success' : 'text-danger' }}">
+                              {{ $product->quantity }}
+                              @if($product->quantity > 0)
+                                  <i class="icon-arrow-up-circle"></i>
+                              @else
+                                  <i class="icon-arrow-down-circle"></i>
+                              @endif
+                          </td>
+                          <td>{{ ucfirst($product->category) }}</td>
+                          <td>
+                              @if($product->quantity > 10)
+                                  <label class="badge badge-success">In Stock</label>
+                              @elseif($product->quantity > 0)
+                                  <label class="badge badge-warning">Low Stock</label>
+                              @else
+                                  <label class="badge badge-danger">Out of Stock</label>
+                              @endif
+                          </td>
+                          <td></td> <!-- Empty cell for Action dropdown -->
+                      </tr>
+                      @endforeach
+                  </tbody>
+              </table>
           </div>
           <!-- content-wrapper ends -->
           <!-- partial -->
@@ -216,7 +226,7 @@
           <div class="modal-dialog" role="document">
               <div class="modal-content">
                   <div class="modal-header">
-                      <h5 class="modal-title" id="editStockModalLabel">Update Stock Quantity</h5>
+                      <h5 class="modal-title" id="editStockModalLabel">Update Product Details</h5>
                       <button type="button" class="close" data-dismiss="modal" aria-label="Close">
                           <span aria-hidden="true">&times;</span>
                       </button>
@@ -227,14 +237,38 @@
                       <div class="modal-body">
                           <input type="hidden" name="product_id" id="editProductId">
                           <div class="form-group">
-                              <label for="editQuantity">New Quantity</label>
+                              <label>Product Name</label>
+                              <input type="text" class="form-control" id="editProductName" readonly>
+                          </div>
+                          <div class="form-group">
+                              <label for="editPrice">Price (₱)</label>
+                              <input type="number" class="form-control" id="editPrice" name="price" min="0" step="0.01" required>
+                          </div>
+                          <div class="form-group">
+                              <label for="editQuantity">Quantity</label>
                               <input type="number" class="form-control" id="editQuantity" name="quantity" min="0" required>
-                              <small class="form-text text-muted">Current status: <span id="currentStatus"></span></small>
+                          </div>
+                          <div class="form-group">
+                              <label for="editCategory">Category</label>
+                              <select class="form-control" id="editCategory" name="category" required>
+                                  <option value="Snacks">Snacks</option>
+                                  <option value="Beverages">Beverages</option>
+                                  <option value="Alcohol">Alcohol</option>
+                                  <option value="Tobacco">Tobacco</option>
+                                  <option value="Canned Goods">Canned Goods</option>
+                                  <option value="Condiments">Condiments</option>
+                                  <option value="Dairy">Dairy</option>
+                                  <option value="Bread">Bread</option>
+                                  <option value="Frozen Food">Frozen Food</option>
+                                  <option value="Personal Care">Personal Care</option>
+                                  <option value="Household Items">Household Items</option>
+                                  <option value="Others">Others</option>
+                              </select>
                           </div>
                       </div>
                       <div class="modal-footer">
                           <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
-                          <button type="submit" class="btn btn-primary">Update Stock</button>
+                          <button type="submit" class="btn btn-primary">Update Product</button>
                       </div>
                   </form>
               </div>
@@ -259,52 +293,144 @@
     <script src="https://cdn.datatables.net/1.11.5/js/jquery.dataTables.min.js"></script>
     <script src="https://cdn.datatables.net/1.11.5/js/dataTables.bootstrap4.min.js"></script>
       {{-- JS Custom Inline --}}
-      <script>
-        $(document).ready(function() {
-          $('#inventory').DataTable({
-            paging: true,       // Enable pagination
-            searching: true,    // Enable search box
-            ordering: true,     // Enable sorting
-            info: true,         // Show table information
-            responsive: true    // Enable responsive mode
-          });
-        });
-      </script>
-      <script>
-        $(document).ready(function() {
-            // Use event delegation in case elements are dynamically loaded
-            $(document).on('click', '.edit-stock', function() {
-                var productId = $(this).data('id');
-                var quantity = $(this).data('quantity');
-                var productName = $(this).closest('tr').find('td:first').text();
-                
-                $('#editProductId').val(productId);
-                $('#editQuantity').val(quantity);
-                $('#editStockModalLabel').text('Update Stock: ' + productName);
-                $('#editStockForm').attr('action', '/inventory/' + productId + '/quantity');
-                
-                $('#editStockModal').modal('show');
-            });
-            
-            // Handle form submission
-            $('#editStockForm').on('submit', function(e) {
-                e.preventDefault();
-                
-                $.ajax({
-                    url: $(this).attr('action'),
-                    type: 'PUT',
-                    data: $(this).serialize(),
-                    success: function(response) {
-                        $('#editStockModal').modal('hide');
-                        location.reload();
-                    },
-                    error: function(xhr) {
-                        alert('Error updating stock: ' + (xhr.responseJSON?.message || 'Unknown error'));
-                    }
+  <script>
+    $(document).ready(function() {
+      var table = $('#inventory').DataTable({
+          paging: true,
+          searching: true,
+          ordering: true,
+          info: true,
+          responsive: true,
+            initComplete: function() {
+                this.api().rows().every(function() {
+                    var row = this.node();
+                    var productId = $(row).data('id');
+                    var productName = $(row).find('td:eq(0)').text().trim();
+
+                    var actionsHtml = `
+                        <div class="d-flex justify-content-center">
+                            <div class="action-bar shadow-sm border rounded-pill px-3 py-1 bg-light">
+                                <a href="#" class="edit-product text-decoration-none" data-id="${productId}" data-bs-toggle="tooltip" title="Update ${productName}">
+                                    <i class="icon-pencil text-primary mx-2 fs-5"></i>
+                                </a>
+                                <a href="#" class="delete-product text-decoration-none" data-id="${productId}" data-name="${productName}" data-bs-toggle="tooltip" title="Delete ${productName}">
+                                    <i class="icon-trash text-danger mx-2 fs-5"></i>
+                                </a>
+                            </div>
+                        </div>
+                    `;
+
+                    $(row).find('td:last').html(actionsHtml);
                 });
-            });
-        });
-      </script>
+
+                // Initialize Bootstrap tooltips
+                $('[data-bs-toggle="tooltip"]').tooltip();
+            }
+
+      });
+        
+      // Edit product button
+      $(document).on('click', '.edit-product', function(e) {
+          e.stopPropagation();
+          var productId = $(this).data('id');
+          
+          $.get('/inventory/' + productId + '/edit', function(product) {
+              $('#editProductId').val(product.id);
+              $('#editProductName').val(product.product_name);
+              $('#editPrice').val(product.price);
+              $('#editQuantity').val(product.quantity);
+              $('#editCategory').val(product.category);
+              $('#editStockModalLabel').text('Update Product: ' + product.product_name);
+              $('#editStockForm').attr('action', '/inventory/' + productId + '/update');
+              
+              $('#editStockModal').modal('show');
+          }).fail(function() {
+              alert('Error fetching product details');
+          });
+      });
+
+      // Delete product button
+      $(document).on('click', '.delete-product', function(e) {
+          e.stopPropagation();
+          var productId = $(this).data('id');
+          var productName = $(this).data('name');
+          
+          Swal.fire({
+              title: 'Confirm Deletion',
+              html: `<p>You are about to delete <strong>${productName}</strong>. This action cannot be undone.</p>
+                    <p><strong>Warning:</strong> Deleting this product will affect all transactions that include it.</p>
+                    <p>Type <strong>CONFIRM</strong> to proceed with deletion.</p>
+                    <input type="text" id="confirmDelete" class="swal2-input" placeholder="Type CONFIRM here">`,
+              icon: 'warning',
+              showCancelButton: true,
+              confirmButtonColor: '#d33',
+              cancelButtonColor: '#3085d6',
+              confirmButtonText: 'Delete',
+              preConfirm: () => {
+                  const confirmValue = document.getElementById('confirmDelete').value;
+                  if (confirmValue !== 'CONFIRM') {
+                      Swal.showValidationMessage('You must type CONFIRM to delete');
+                  }
+                  return confirmValue === 'CONFIRM';
+              }
+          }).then((result) => {
+              if (result.isConfirmed) {
+                  $.ajax({
+                      url: '/inventory/' + productId + '/delete',
+                      type: 'DELETE',
+                      data: {
+                          _token: $('meta[name="csrf-token"]').attr('content')
+                      },
+                      success: function(response) {
+                          Swal.fire(
+                              'Deleted!',
+                              'The product has been deleted.',
+                              'success'
+                          ).then(() => {
+                              location.reload();
+                          });
+                      },
+                      error: function(xhr) {
+                          Swal.fire(
+                              'Error!',
+                              'Failed to delete product: ' + (xhr.responseJSON?.message || 'Unknown error'),
+                              'error'
+                          );
+                      }
+                  });
+              }
+          });
+      });
+
+      // Handle form submission
+      $('#editStockForm').on('submit', function(e) {
+          e.preventDefault();
+          
+          $.ajax({
+              url: $(this).attr('action'),
+              type: 'PUT',
+              data: $(this).serialize(),
+              success: function(response) {
+                  $('#editStockModal').modal('hide');
+                  Swal.fire(
+                      'Updated!',
+                      'Product has been updated.',
+                      'success'
+                  ).then(() => {
+                      location.reload();
+                  });
+              },
+              error: function(xhr) {
+                  Swal.fire(
+                      'Error!',
+                      'Failed to update product: ' + (xhr.responseJSON?.message || 'Unknown error'),
+                      'error'
+                  );
+              }
+          });
+      });
+    });
+  </script>
       {{-- Change store name --}}
   </body>
 </html>

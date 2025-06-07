@@ -26,4 +26,12 @@ class StoreInfo extends Model
     {
         return $this->belongsTo(User::class);
     }
+
+        /**
+     * Get all transactions for the store.
+     */
+    public function transactions()
+    {
+        return $this->hasMany(Transaction::class, 'costumer_store_id');
+    }
 }

@@ -54,4 +54,8 @@ Route::middleware(['auth', 'check.store_info'])->group(function () {
     // Handle form submission (no need for GET here)
     Route::post('/inventory/add-products/store', [Products_Inventory::class, 'add_product'])->name('add.product');
     Route::put('/inventory/{product}/quantity', [Products_Inventory::class, 'update_stock'])->name('edit.quantity.product');
+        // Action Routes (following your naming style)
+    Route::get('/inventory/{product}/edit', [Products_Inventory::class, 'edit_stock'])->name('edit.product');
+    Route::put('/inventory/{product}/update', [Products_Inventory::class, 'update_stock'])->name('edit.quantity.product');
+    Route::delete('/inventory/{product}/delete', [Products_Inventory::class, 'delete_product'])->name('delete.product');
 });

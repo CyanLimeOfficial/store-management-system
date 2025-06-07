@@ -27,4 +27,9 @@ class Product_Inventory extends Model
     {
         return $this->belongsTo(StoreInfo::class);
     }
+
+    public function transactions()
+    {
+        return $this->hasMany(Transaction::class, 'id');
+    }
 }

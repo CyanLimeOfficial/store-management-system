@@ -43,17 +43,42 @@ class Products_Inventory extends Controller
             return redirect()->back()->with('error', 'Failed to add product.')->withInput();
         }
     }
+    public function edit_stock($id)
+    {
+        $product = Product_Inventory::findOrFail($id);
+        return response()->json($product);
+    }
 
     public function update_stock(Request $request, $id)
     {
         $request->validate([
-            'quantity' => 'required|integer|min:0'
+            'price' => 'required|numeric|min:0',
+            'quantity' => 'required|integer|min:0',
+            'category' => 'required|string'
         ]);
 
         $product = Product_Inventory::findOrFail($id);
+        $product->price = $request->price;
         $product->quantity = $request->quantity;
+        $product->category = $request->category;
         $product->save();
 
-        return response()->json(['message' => 'Stock updated successfully']);
+        return response()->json(['message' => 'Product updated successfully']);
+    }
+
+    public function delete_product($id)
+    {
+        $product = Product_Inventory::findOrFail($id);
+        
+        // Check if product has any transactions
+        if ($product->transactions()->exists()) {
+            return response()->json([
+                'message' => 'This product has associated transactions and cannot be deleted.'
+            ], 422);
+        }
+        
+        $product->delete();
+        
+        return response()->json(['message' => 'Product deleted successfully']);
     }
 }
