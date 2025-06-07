@@ -53,4 +53,5 @@ Route::middleware(['auth', 'check.store_info'])->group(function () {
 
     // Handle form submission (no need for GET here)
     Route::post('/inventory/add-products/store', [Products_Inventory::class, 'add_product'])->name('add.product');
+    Route::put('/inventory/{product}/quantity', [Products_Inventory::class, 'update_stock'])->name('edit.quantity.product');
 });

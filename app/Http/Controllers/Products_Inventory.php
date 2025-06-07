@@ -43,4 +43,17 @@ class Products_Inventory extends Controller
             return redirect()->back()->with('error', 'Failed to add product.')->withInput();
         }
     }
+
+    public function update_stock(Request $request, $id)
+    {
+        $request->validate([
+            'quantity' => 'required|integer|min:0'
+        ]);
+
+        $product = Product_Inventory::findOrFail($id);
+        $product->quantity = $request->quantity;
+        $product->save();
+
+        return response()->json(['message' => 'Stock updated successfully']);
+    }
 }

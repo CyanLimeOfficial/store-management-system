@@ -15,6 +15,7 @@
     <link rel="stylesheet" href="assets/vendors/chartist/chartist.min.css">
     <!-- End plugin css for this page -->
     <!-- inject:css -->
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <link rel="stylesheet" href="https://cdn.datatables.net/1.11.5/css/dataTables.bootstrap4.min.css">
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <!-- endinject -->
@@ -153,43 +154,46 @@
               <div class="card">
                   <div class="card-body">
                       <h4 class="card-title">Products Inventory</h4>
-                      <table class="table table-hover" id="inventory">
-                          <thead>
-                              <tr>
-                                  <th>Product Name</th>
-                                  <th>Price</th>
-                                  <th>Quantity</th>
-                                  <th>Category</th>
-                                  <th>Status</th>
-                              </tr>
-                          </thead>
-                          <tbody>
-                              @foreach($products as $product)
-                              <tr>
-                                  <td>{{ $product->product_name }}</td>
-                                  <td>₱{{ number_format($product->price, 2) }}</td>
-                                  <td class="{{ $product->quantity > 0 ? 'text-success' : 'text-danger' }}">
-                                      {{ $product->quantity }}
-                                      @if($product->quantity > 0)
-                                          <i class="icon-arrow-up-circle"></i>
-                                      @else
-                                          <i class="icon-arrow-down-circle"></i>
-                                      @endif
-                                  </td>
-                                  <td>{{ ucfirst($product->category) }}</td>
-                                  <td>
-                                      @if($product->quantity > 10)
-                                          <label class="badge badge-success">In Stock</label>
-                                      @elseif($product->quantity > 0)
-                                          <label class="badge badge-warning">Low Stock</label>
-                                      @else
-                                          <label class="badge badge-danger">Out of Stock</label>
-                                      @endif
-                                  </td>
-                              </tr>
-                              @endforeach
-                          </tbody>
-                      </table>
+                        <table class="table table-hover" id="inventory">
+                            <thead>
+                                <tr>
+                                    <th>Product Name</th>
+                                    <th>Price</th>
+                                    <th>Quantity</th>
+                                    <th>Category</th>
+                                    <th>Status</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach($products as $product)
+                                <tr>
+                                    <td>{{ $product->product_name }}</td>
+                                    <td>₱{{ number_format($product->price, 2) }}</td>
+                                    <td class="edit-stock {{ $product->quantity > 0 ? 'text-success' : 'text-danger' }}"
+                                        data-id="{{ $product->id }}"
+                                        data-quantity="{{ $product->quantity }}"
+                                        style="cursor: pointer;">
+                                        {{ $product->quantity }}
+                                        @if($product->quantity > 0)
+                                            <i class="icon-arrow-up-circle"></i>
+                                        @else
+                                            <i class="icon-arrow-down-circle"></i>
+                                        @endif
+                                    </td>
+                                    <td>{{ ucfirst($product->category) }}</td>
+                                    <td>
+                                        @if($product->quantity > 10)
+                                            <label class="badge badge-success">In Stock</label>
+                                        @elseif($product->quantity > 0)
+                                            <label class="badge badge-warning">Low Stock</label>
+                                        @else
+                                            <label class="badge badge-danger">Out of Stock</label>
+                                        @endif
+                                    </td>
+                                </tr>
+                                @endforeach
+                            </tbody>
+                        </table>
                       <a href="/inventory/add-products" class="btn btn-primary btn-fw">
                           <i class="icon-plus"></i> Add Product
                       </a>
@@ -207,111 +211,32 @@
     </div>
     <!-- container-scroller -->
     {{-- Modal Panel --}}
-      {{-- See Products --}}
-      <div class="modal fade" id="productModal" tabindex="-1" role="dialog" aria-labelledby="productModalLabel" aria-hidden="true">
-        <div class="modal-dialog modal-md" role="document">
-          <div class="modal-content">
-            <div class="modal-header">
-              <h5 class="modal-title">Search Products</h5>
-            </div>
-            <div class="modal-body">
-              <div class="table-responsive">
-                <table class="table table-bordered table-hover table-striped" id="productTable">
-                  <thead class="thead-light">
-                    <tr>
-                      <th>Product Name</th>
-                      <th>Category</th>
-                      <th>Price</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    @foreach($products as $product)
-                    <tr>
-                      <td>{{ $product->product_name }}</td>
-                      <td>{{ $product->category }}</td>
-                      <td>{{ number_format($product->price, 2) }}</td>
-                    </tr>
-                    @endforeach
-                  </tbody>
-                </table>
-              </div>
-            </div>
-            <div class="modal-footer">
-              <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
-            </div>
-          </div>
-        </div>
-      </div>
-      <!-- Change Store Name Modal -->
-      <div class="modal fade" id="changeStoreNameModal" tabindex="-1" role="dialog" aria-hidden="true">
-        <div class="modal-dialog modal-dialog-centered" role="document">
-          <div class="modal-content">
-            <div class="modal-header">
-              <h5 class="modal-title">Change Store Name</h5>
-              <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-                <span aria-hidden="true">&times;</span>
-              </button>
-            </div>
-            <form id="storeNameForm">
-              @csrf
-              <div class="modal-body">
-                <div class="form-group">
-                  <label for="currentStoreName">Current Store Name</label>
-                  <input type="text" class="form-control" value="{{ $store->store_name }}" id="currentStoreName" readonly>
-                </div>
-                <div class="form-group">
-                  <label for="newStoreName">New Store Name</label>
-                  <input type="text" class="form-control" id="newStoreName" name="new_store_name" required minlength="3" maxlength="255">
-                  <small class="form-text text-muted">Minimum 3 characters</small>
-                </div>
-              </div>
-              <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
-                <button type="submit" class="btn btn-primary">Save Changes</button>
-              </div>
-            </form>
-          </div>
-        </div>
-      </div>
-      {{-- Add Products Modal --}}
-      <!-- Add Product Modal -->
-      <div class="modal fade" id="addProductModal" tabindex="-1" role="dialog" aria-labelledby="addProductModalLabel" aria-hidden="true">
+      <!-- Modal for editing stock -->
+      <div class="modal fade" id="editStockModal" tabindex="-1" role="dialog" aria-labelledby="editStockModalLabel" aria-hidden="true">
           <div class="modal-dialog" role="document">
               <div class="modal-content">
                   <div class="modal-header">
-                      <h5 class="modal-title" id="addProductModalLabel">Add products to your store!</h5>
+                      <h5 class="modal-title" id="editStockModalLabel">Update Stock Quantity</h5>
                       <button type="button" class="close" data-dismiss="modal" aria-label="Close">
                           <span aria-hidden="true">&times;</span>
                       </button>
                   </div>
-                  <div class="modal-body">
-                      <form class="forms-sample" method="POST" action="{{ route('add.product') }}" enctype="multipart/form-data" id="addProductForm">
-                          @csrf
+                  <form id="editStockForm" method="POST">
+                      @csrf
+                      @method('PUT')
+                      <div class="modal-body">
+                          <input type="hidden" name="product_id" id="editProductId">
                           <div class="form-group">
-                              <label for="store_id">Store Reference Number</label>
-                              <input type="text" class="form-control" name="store_id" value="{{ $store->id }}" readonly>
+                              <label for="editQuantity">New Quantity</label>
+                              <input type="number" class="form-control" id="editQuantity" name="quantity" min="0" required>
+                              <small class="form-text text-muted">Current status: <span id="currentStatus"></span></small>
                           </div>
-                          <div class="form-group">
-                              <label for="product_name">Product's Name</label>
-                              <input type="text" class="form-control" name="product_name" required>
-                          </div>
-                          <div class="form-group">
-                              <label for="price">Price</label>
-                              <input type="number" class="form-control" name="price" required>
-                          </div>
-                          <div class="form-group">
-                              <label for="category">Category</label>
-                              <select class="form-control" name="category" required>
-                                  <option value="Snacks">Snacks</option>
-                                  <option value="Beverages">Beverages</option>
-                              </select>
-                          </div>
-                      </form>
-                  </div>
-                  <div class="modal-footer">
-                      <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
-                      <button type="submit" class="btn btn-primary" form="addProductForm">Submit</button>
-                  </div>
+                      </div>
+                      <div class="modal-footer">
+                          <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
+                          <button type="submit" class="btn btn-primary">Update Stock</button>
+                      </div>
+                  </form>
               </div>
           </div>
       </div>
@@ -343,6 +268,41 @@
             info: true,         // Show table information
             responsive: true    // Enable responsive mode
           });
+        });
+      </script>
+      <script>
+        $(document).ready(function() {
+            // Use event delegation in case elements are dynamically loaded
+            $(document).on('click', '.edit-stock', function() {
+                var productId = $(this).data('id');
+                var quantity = $(this).data('quantity');
+                var productName = $(this).closest('tr').find('td:first').text();
+                
+                $('#editProductId').val(productId);
+                $('#editQuantity').val(quantity);
+                $('#editStockModalLabel').text('Update Stock: ' + productName);
+                $('#editStockForm').attr('action', '/inventory/' + productId + '/quantity');
+                
+                $('#editStockModal').modal('show');
+            });
+            
+            // Handle form submission
+            $('#editStockForm').on('submit', function(e) {
+                e.preventDefault();
+                
+                $.ajax({
+                    url: $(this).attr('action'),
+                    type: 'PUT',
+                    data: $(this).serialize(),
+                    success: function(response) {
+                        $('#editStockModal').modal('hide');
+                        location.reload();
+                    },
+                    error: function(xhr) {
+                        alert('Error updating stock: ' + (xhr.responseJSON?.message || 'Unknown error'));
+                    }
+                });
+            });
         });
       </script>
       {{-- Change store name --}}
