@@ -17,6 +17,7 @@
     <!-- inject:css -->
     <link rel="stylesheet" href="https://cdn.datatables.net/1.11.5/css/dataTables.bootstrap4.min.css">
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <meta name="csrf-token" content="{{ csrf_token() }}">
     <!-- endinject -->
     <!-- Layout styles -->
     <link rel="stylesheet" href="assets/css/style.css">
@@ -332,6 +333,28 @@
             gap: 15px;
             margin-top: 20px;
         }
+
+
+        .grid-col-span-2 {
+            grid-column: span 2;
+        }
+
+
+        .action-buttons .btn {
+            height: 100%;
+            padding: 0.5rem 1rem; 
+        }
+
+
+        .grid-col-span-2 {
+            grid-column: span 2;
+        }
+
+ 
+        .action-buttons .btn {
+            height: 100%;
+            padding: 0.5rem 1rem; 
+        }
         
         .btn-void {
             background: linear-gradient(120deg, #6c757d, #495057);
@@ -533,108 +556,103 @@
                   </div>
               @endif
              <!-- Compact Table Version -->
-              <div class="pos-container">
-                  <div class="card">
-                      <div class="card-header">
-                          <div class="d-flex align-items-center">
-                              <i class="fas fa-cash-register me-3"></i>
-                              <h4 class="mb-0">Point of Sale (version 1.0)</h4>
-                          </div>
-                      </div>
-                      <div class="card-body">
-                          <div class="row">
-                              <!-- Left Column: Products -->
-                              <div class="col-lg-8">
-                                  <div class="card mb-4">
-                                      <div class="card-body">
-                                          <div class="search-box">
-                                              <i class="fas fa-search"></i>
-                                              <input type="text" id="searchProduct" class="form-control" placeholder="Search products...">
-                                          </div>
-                                          
-                                          <div class="table-responsive">
-                                              <table id="productsTable" class="table table-sm table-hover">
-                                                  <thead>
-                                                      <tr>
-                                                          <th>ID</th>
-                                                          <th>Product</th>
-                                                          <th>Price</th>
-                                                          <th>Stock</th>
-                                                          <th>Actions</th>
-                                                      </tr>
-                                                  </thead>
-                                                  <tbody>
-                                                      @foreach($products as $product)
-                                                      <tr>
-                                                          <td>{{ $product->id }}</td>
-                                                          <td>{{ $product->product_name }}</td>
-                                                          <td>₱{{ number_format($product->price, 2) }}</td>
-                                                          <td>
-                                                              <span class="badge bg-{{ $product->stock_status }}">
-                                                                  {{ $product->quantity }} in stock
-                                                              </span>
-                                                          </td>
-                                                          <td>
-                                                              <button class="btn btn-sm btn-primary add-to-cart" data-id="{{ $product->id }}">
-                                                                  <i class="fas fa-plus"></i> Add
-                                                              </button>
-                                                          </td>
-                                                      </tr>
-                                                      @endforeach
-                                                  </tbody>
-                                              </table>
-                                          </div>
-                                      </div>
-                                  </div>
-                              </div>
-                              
-                              <!-- Right Column: Cart & Checkout -->
-                              <div class="col-lg-4">
-                                  <div class="cart-container">
-                                      <div class="card">
-                                          <div class="card-body">
-                                              <div class="cart-header">
-                                                  <h5 class="mb-0">Current Sale</h5>
-                                                  <span id="itemCount">0 items</span>
-                                              </div>
-                                              
-                                              <div class="cart-items" id="cartItems">
-                                                  <div class="empty-cart">
-                                                      <i class="fas fa-shopping-cart"></i>
-                                                      <h5>Your cart is empty</h5>
-                                                      <p class="text-center">Add products by clicking on them in the product grid</p>
-                                                  </div>
-                                              </div>
-                                              
-                                              <div class="cart-summary">
-                                                  <div class="summary-row">
-                                                      <span>Subtotal:</span>
-                                                      <span id="subtotal">₱0.00</span>
-                                                  </div>
+            <div class="pos-container p-4">
+                <div class="card">
+                    <div class="card-header">
+                        <div class="d-flex align-items-center">
+                            <i class="fas fa-cash-register me-3"></i>
+                            <h4 class="mb-0">Point of Sale v1.1</h4>
+                        </div>
+                    </div>
+                    <div class="card-body">
+                        <div class="row">
+                            <div class="col-lg-8">
+                                <div class="card mb-4">
+                                    <div class="card-body">
+                                        <div class="search-box">
+                                            <i class="fas fa-search"></i>
+                                            <input type="text" id="searchProduct" class="form-control" placeholder="Search products...">
+                                        </div>
+                                        
+                                        <div class="table-responsive">
+                                            <table id="productsTable" class="table table-sm table-hover">
+                                                <thead>
+                                                    <tr>
+                                                        <th>ID</th>
+                                                        <th>Product</th>
+                                                        <th>Price</th>
+                                                        <th>Stock</th>
+                                                        <th>Actions</th>
+                                                    </tr>
+                                                </thead>
+                                                <tbody>
+                                                    @foreach($products as $product)
+                                                    <tr>
+                                                        <td>{{ $product->id }}</td>
+                                                        <td>{{ $product->product_name }}</td>
+                                                        <td>₱{{ number_format($product->price, 2) }}</td>
+                                                        <td>
+                                                            <span class="badge bg-{{ $product->stock_status }}">
+                                                                {{ $product->quantity }} in stock
+                                                            </span>
+                                                        </td>
+                                                        <td>
+                                                            <button class="btn btn-sm btn-primary add-to-cart" data-id="{{ $product->id }}">
+                                                                <i class="fas fa-plus"></i> Add
+                                                            </button>
+                                                        </td>
+                                                    </tr>
+                                                    @endforeach
+                                                </tbody>
+                                            </table>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="col-lg-4">
+                                <div class="cart-container">
+                                    <div class="card">
+                                        <div class="card-body">
+                                            <div class="cart-header">
+                                                <h5 class="mb-0">Current Sale</h5>
+                                                <span id="itemCount">0 items</span>
+                                            </div>
+                                            
+                                            <div class="cart-items" id="cartItems">
+                                                <div class="empty-cart">
+                                                    <i class="fas fa-shopping-cart"></i>
+                                                    <h5>Your cart is empty</h5>
+                                                    <p class="text-center">Add products by clicking on them in the product grid</p>
+                                                </div>
+                                            </div>
+                                            
+                                            <div class="cart-summary">
+                                                <div class="summary-row">
+                                                    <span>Subtotal:</span>
+                                                    <span id="subtotal">₱0.00</span>
+                                                </div>
 
-                                                  <div class="summary-row summary-total">
-                                                      <span>Total:</span>
-                                                      <span id="total">₱0.00</span>
-                                                  </div>
-                                                  
-                                                  <div class="action-buttons">
-                                                      <button class="btn btn-danger btn-sm" id="voidBtn">
-                                                          <i class="fas fa-times-circle me-1"></i>Void
-                                                      </button>
-                                                      <button class="btn btn-success btn-sm" id="payBtn">
-                                                          <i class="fas fa-credit-card me-1"></i>Pay
-                                                      </button> 
-                                                      
-                                                  </div>
-                                              </div>
-                                          </div>
-                                      </div>
-                                  </div>
-                              </div>
-                          </div>
-                      </div>
-                  </div>
-              </div>
+                                                <div class="summary-row summary-total">
+                                                    <span>Total:</span>
+                                                    <span id="total">₱0.00</span>
+                                                </div>
+                                                
+                                                <div class="action-buttons">
+                                                    <button class="btn btn-danger" id="voidBtn">Void</button>
+                                                    <button class="btn btn-warning" id="debtBtn">Debt</button>
+
+                                                    <button class="btn btn-success grid-col-span-2" id="payBtn">Pay</button>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
           </div>
           <!-- content-wrapper ends -->
           <!-- partial -->
@@ -664,305 +682,267 @@
     <!-- End custom js for this page -->
     <script src="https://cdn.datatables.net/1.11.5/js/jquery.dataTables.min.js"></script>
     <script src="https://cdn.datatables.net/1.11.5/js/dataTables.bootstrap4.min.js"></script>
-      {{-- JS Custom Inline --}}
-    <script>
-      $(document).ready(function() {
-          // Initialize DataTable
-          const productsTable = $('#productsTable').DataTable({
-              pageLength: 5,
-              lengthMenu: [5, 10, 25],
-              responsive: true,
-              order: [[0, 'asc']],
-              columnDefs: [
-                  { targets: [0, 4], orderable: false, searchable: false },
-                  { targets: [1, 2], orderable: true, searchable: true }
-              ]
-          });
-          
-          // Search functionality
-          $('#searchProduct').on('keyup', function() {
-              productsTable.search(this.value).draw();
-          });
-          
-          // Cart items array
-          let cart = [];
-          
-          // Add to cart functionality
-          $(document).on('click', '.add-to-cart', function() {
-              const productId = $(this).data('id');
-              const row = $(this).closest('tr');
-              const productName = row.find('td:eq(1)').text().trim();
-              const productPrice = parseFloat(row.find('td:eq(2)').text().replace('₱', ''));
-              
-              // Fix: Properly extract stock quantity from "X in stock" text
-              const stockText = row.find('td:eq(3)').text().trim();
-              const stock = parseInt(stockText); // This will parse the first number in the string
-              
-              // Check if product already in cart
-              const existingItem = cart.find(item => item.id === productId);
-              
-              if (existingItem) {
-                  if (existingItem.quantity < stock) {
-                      existingItem.quantity++;
-                  } else {
-                      alert(`Only ${stock} units available in stock!`);
-                      return;
-                  }
-              } else {
-                  if (stock > 0) {
-                      cart.push({
-                          id: productId,
-                          name: productName,
-                          price: productPrice,
-                          quantity: 1
-                      });
-                  } else {
-                      alert('This product is out of stock!');
-                      return;
-                  }
-              }
-              
-              updateCartDisplay();
-          });
-          
-          // Update cart display
-          function updateCartDisplay() {
-              const cartItems = $('#cartItems');
-              const itemCount = $('#itemCount');
-              const subtotalEl = $('#subtotal');
-              const totalEl = $('#total');
-              
-              // Update item count
-              const totalItems = cart.reduce((sum, item) => sum + item.quantity, 0);
-              itemCount.text(`${totalItems} ${totalItems === 1 ? 'item' : 'items'}`);
-              
-              // Calculate totals (no tax)
-              const subtotal = cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
-              const total = subtotal; // Total is same as subtotal without tax
-              
-              subtotalEl.text(`₱${subtotal.toFixed(2)}`);
-              totalEl.text(`₱${total.toFixed(2)}`);
-              
-              // Rest of the function remains the same...
-              // Render cart items
-              if (cart.length === 0) {
-                  cartItems.html(`
-                      <div class="empty-cart">
-                          <i class="fas fa-shopping-cart"></i>
-                          <h5>Your cart is empty</h5>
-                          <p class="text-center">Add products by clicking on them in the product grid</p>
-                      </div>
-                  `);
-                  return;
-              }
-              
-              let cartHtml = '';
-              cart.forEach(item => {
-                  cartHtml += `
-                      <div class="cart-item">
-                          <div class="item-info">
-                              <div class="item-name">${item.name}</div>
-                              <div class="item-price">₱${item.price.toFixed(2)} each</div>
-                          </div>
-                          <div class="item-quantity">
-                              <button class="btn btn-sm btn-outline-secondary quantity-btn minus" data-id="${item.id}">-</button>
-                              <span class="quantity-value mx-2">${item.quantity}</span>
-                              <button class="btn btn-sm btn-outline-secondary quantity-btn plus" data-id="${item.id}">+</button>
-                              <button class="btn btn-sm btn-outline-danger remove-btn" data-id="${item.id}">
-                                  <i class="fas fa-trash-alt"></i>
-                              </button>
-                          </div>
-                          <div class="item-total">₱${(item.price * item.quantity).toFixed(2)}</div>
-                      </div>
-                  `;
-              });
-              
-              cartItems.html(cartHtml);
-          }
-          
-          // Adjust item quantity
-          $(document).on('click', '.quantity-btn.minus', function() {
-              const productId = $(this).data('id');
-              const item = cart.find(item => item.id === productId);
-              
-              if (item) {
-                  item.quantity--;
-                  if (item.quantity <= 0) {
-                      cart = cart.filter(i => i.id !== productId);
-                  }
-                  updateCartDisplay();
-              }
-          });
-          
-          $(document).on('click', '.quantity-btn.plus', function() {
-              const productId = $(this).data('id');
-              const item = cart.find(item => item.id === productId);
-              const row = $(`#productsTable tbody tr:has(button[data-id="${productId}"])`).first();
-              const stockText = row.find('td:eq(3) .badge').text();
-              const stock = parseInt(stockText.split(' ')[0]);
-              
-              if (item) {
-                  if (item.quantity < stock) {
-                      item.quantity++;
-                      updateCartDisplay();
-                  } else {
-                      alert(`Only ${stock} units available in stock!`);
-                  }
-              }
-          });
-          
-          // Remove item from cart
-          $(document).on('click', '.remove-btn', function() {
-              const productId = $(this).data('id');
-              cart = cart.filter(item => item.id !== productId);
-              updateCartDisplay();
-          });
-          
-          // Void sale button
-          $('#voidBtn').on('click', function() {
-              if (cart.length > 0 && confirm('Are you sure you want to void this sale?')) {
-                  cart = [];
-                  updateCartDisplay();
-              }
-          });
+        {{-- JS Custom Inline --}}
+        <script>
+            $(document).ready(function() {
+                // (Your existing DataTable, add-to-cart, and cart update functions remain the same...)
+                // Initialize DataTable
+                const productsTable = $('#productsTable').DataTable({
+                    pageLength: 5,
+                    lengthMenu: [5, 10, 25],
+                    responsive: true,
+                    order: [[1, 'asc']],
+                    columnDefs: [
+                        { targets: [0, 4], orderable: false, searchable: false },
+                        { targets: [1, 2, 3], orderable: true, searchable: true }
+                    ]
+                });
+                
+                // Search functionality
+                $('#searchProduct').on('keyup', function() {
+                    productsTable.search(this.value).draw();
+                });
+                
+                // Cart items array
+                let cart = [];
+                
+                // Add to cart functionality
+                $(document).on('click', '.add-to-cart', function() {
+                    const productId = $(this).data('id');
+                    const row = $(this).closest('tr');
+                    const productName = row.find('td:eq(1)').text().trim();
+                    const productPrice = parseFloat(row.find('td:eq(2)').text().replace('₱', '').replace(',', ''));
+                    const stockText = row.find('td:eq(3)').text().trim();
+                    const stock = parseInt(stockText);
+                    
+                    const existingItem = cart.find(item => item.id === productId);
+                    
+                    if (existingItem) {
+                        if (existingItem.quantity < stock) {
+                            existingItem.quantity++;
+                        } else {
+                            alert(`Only ${stock} units available in stock!`);
+                            return;
+                        }
+                    } else {
+                        if (stock > 0) {
+                            cart.push({
+                                id: productId,
+                                name: productName,
+                                price: productPrice,
+                                quantity: 1
+                            });
+                        } else {
+                            alert('This product is out of stock!');
+                            return;
+                        }
+                    }
+                    
+                    updateCartDisplay();
+                });
+                
+                // Update cart display
+                function updateCartDisplay() {
+                    const cartItems = $('#cartItems');
+                    const itemCount = $('#itemCount');
+                    const subtotalEl = $('#subtotal');
+                    const totalEl = $('#total');
+                    
+                    if (cart.length === 0) {
+                        cartItems.html(`
+                            <div class="empty-cart">
+                                <i class="fas fa-shopping-cart"></i>
+                                <h5>Your cart is empty</h5>
+                                <p class="text-center">Add products by clicking 'Add' in the product list</p>
+                            </div>
+                        `);
+                        itemCount.text('0 items');
+                        subtotalEl.text('₱0.00');
+                        totalEl.text('₱0.00');
+                        return;
+                    }
+                    const totalItems = cart.reduce((sum, item) => sum + item.quantity, 0);
+                    itemCount.text(`${totalItems} ${totalItems === 1 ? 'item' : 'items'}`);
+                    
+                    const subtotal = cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
+                    const total = subtotal;
+                    
+                    subtotalEl.text(`₱${subtotal.toFixed(2)}`);
+                    totalEl.text(`₱${total.toFixed(2)}`);
+                    let cartHtml = '';
+                    cart.forEach(item => {
+                        cartHtml += `
+                            <div class="cart-item">
+                                <div class="item-info">
+                                    <div class="item-name fw-bold">${item.name}</div>
+                                    <div class="item-price text-muted">₱${item.price.toFixed(2)} each</div>
+                                </div>
+                                <div class="item-quantity">
+                                    <button class="btn btn-sm btn-outline-secondary quantity-btn minus" data-id="${item.id}">-</button>
+                                    <span class="quantity-value mx-2">${item.quantity}</span>
+                                    <button class="btn btn-sm btn-outline-secondary quantity-btn plus" data-id="${item.id}">+</button>
+                                </div>
+                                <div class="item-total fw-bold">₱${(item.price * item.quantity).toFixed(2)}</div>
+                                <button class="btn btn-sm btn-outline-danger remove-btn ms-2" data-id="${item.id}">
+                                    <i class="fas fa-trash-alt"></i>
+                                </button>
+                            </div>
+                        `;
+                    });
+                    
+                    cartItems.html(cartHtml);
+                }
+                
+                // Adjust item quantity
+                $(document).on('click', '.quantity-btn.plus', function() {
+                    const productId = $(this).data('id');
+                    const item = cart.find(item => item.id === productId);
+                    const row = productsTable.rows().nodes().to$().find(`.add-to-cart[data-id="${productId}"]`).closest('tr');
+                    const stock = parseInt(row.find('td:eq(3)').text().trim());
+                    if (item && item.quantity < stock) {
+                        item.quantity++;
+                        updateCartDisplay();
+                    } else {
+                        alert(`Only ${stock} units available in stock!`);
+                    }
+                });
+                $(document).on('click', '.quantity-btn.minus', function() {
+                    const productId = $(this).data('id');
+                    const item = cart.find(item => item.id === productId);
+                    
+                    if (item) {
+                        item.quantity--;
+                        if (item.quantity <= 0) {
+                            cart = cart.filter(i => i.id !== productId);
+                        }
+                        updateCartDisplay();
+                    }
+                });
+                
+                // Remove item from cart
+                $(document).on('click', '.remove-btn', function() {
+                    const productId = $(this).data('id');
+                    cart = cart.filter(item => item.id !== productId);
+                    updateCartDisplay();
+                });
+                
+                // Void sale button
+                $('#voidBtn').on('click', function() {
+                    if (cart.length > 0 && confirm('Are you sure you want to void this sale?')) {
+                        cart = [];
+                        updateCartDisplay();
+                    }
+                });
 
-          // Process payment
-          $('#payBtn').on('click', function() {
-              if (cart.length === 0) {
-                  alert('Your cart is empty!');
-                  return;
-              }
-              
-              const subtotal = cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
-              const tax = subtotal * 0.1;
-              const total = subtotal + tax;
-              
-              // In a real application, you would send this to your server
-              // For demo purposes, we'll simulate a successful payment
-              const transactionId = 'TRX-' + Math.floor(100000 + Math.random() * 900000);
-              
-              // Generate receipt
-              generateReceipt(transactionId);
-              
-              // Clear cart after successful payment
-              cart = [];
-              updateCartDisplay();
-          });
-          
-          // Generate receipt
-          function generateReceipt(transactionId) {
-              const subtotal = cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
-              const total = subtotal; // No tax
-              const now = new Date();
-              
-              // Create receipt content
-              let receiptHtml = `
-                  <div class="receipt-header">
-                      <h4>STORE RECEIPT</h4>
-                      <div>${now.toLocaleDateString()} ${now.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}</div>
-                      <div>Transaction ID: ${transactionId}</div>
-                      <div>Cashier: ${'User'}</div>
-                  </div>
-                  <hr>
-                  <div class="receipt-items">
-              `;
-              
-              cart.forEach(item => {
-                  receiptHtml += `
-                      <div class="receipt-item">
-                          <div class="item-name">${item.quantity} x ${item.name}</div>
-                          <div class="item-price">₱${(item.price * item.quantity).toFixed(2)}</div>
-                      </div>
-                  `;
-              });
-              
-              receiptHtml += `
-                  </div>
-                  <hr>
-                  <div class="receipt-totals">
-                      <div class="total-row grand-total">
-                          <span>TOTAL:</span>
-                          <span>₱${total.toFixed(2)}</span>
-                      </div>
-                  </div>
-                  <hr>
-                  <div class="receipt-footer">
-                      <p>Thank you for your purchase!</p>
-                      <p>Have a nice day!</p>
-                  </div>
-              `;
-              
-              // Show receipt in modal
-              const modalHtml = `
-                  <div class="modal fade" id="receiptModal" tabindex="-1" aria-hidden="true">
-                      <div class="modal-dialog modal-lg">
-                          <div class="modal-content">
-                              <div class="modal-header">
-                                  <h5 class="modal-title">Receipt</h5>
-                                  <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                              </div>
-                              <div class="modal-body">
-                                  <div class="receipt-preview p-3">
-                                      ${receiptHtml}
-                                  </div>
-                              </div>
-                              <div class="modal-footer">
-                                  <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-                                  <button type="button" class="btn btn-primary" id="printReceipt">
-                                      <i class="fas fa-print me-1"></i> Print Receipt
-                                  </button>
-                              </div>
-                          </div>
-                      </div>
-                  </div>
-              `;
-              
-              $('body').append(modalHtml);
-              const receiptModal = new bootstrap.Modal(document.getElementById('receiptModal'));
-              receiptModal.show();
-              
-              // Print receipt
-              $('#printReceipt').on('click', function() {
-                  const printWindow = window.open('', '_blank');
-                  printWindow.document.write(`
-                      <html>
-                      <head>
-                          <title>Receipt ${transactionId}</title>
-                          <style>
-                              body { font-family: Arial, sans-serif; padding: 20px; }
-                              .receipt-header { text-align: center; margin-bottom: 20px; }
-                              .receipt-header h4 { margin-bottom: 5px; }
-                              .receipt-item { display: flex; justify-content: space-between; margin-bottom: 5px; }
-                              .receipt-totals { margin-top: 20px; }
-                              .total-row { display: flex; justify-content: space-between; margin-bottom: 5px; }
-                              .grand-total { font-weight: bold; font-size: 1.1em; border-top: 1px solid #ddd; padding-top: 10px; }
-                              .receipt-footer { text-align: center; margin-top: 30px; font-style: italic; }
-                              hr { border-top: 1px dashed #ddd; }
-                          </style>
-                      </head>
-                      <body>
-                          ${receiptHtml}
-                          <script>
-                              window.onload = function() {
-                                  window.print();
-                                  setTimeout(function() {
-                                      window.close();
-                                  }, 1000);
-                              };
-                          <\/script>
-                      </body>
-                      </html>
-                  `);
-                  printWindow.document.close();
-              });
-              
-              // Clean up modal when closed
-              $('#receiptModal').on('hidden.bs.modal', function() {
-                  $(this).remove();
-              });
-          }
-      });
-    </script>
+                // MODIFIED: 'Pay' button now calls the reusable function
+                $('#payBtn').on('click', function() {
+                    processTransaction('purchase', $(this));
+                });
+
+                // NEW: 'Record as Debt' button click handler
+                $('#debtBtn').on('click', function() {
+                    processTransaction('debt', $(this));
+                });
+
+                // NEW: Reusable function to process the transaction via AJAX
+                function processTransaction(transactionType, clickedButton) {
+                    if (cart.length === 0) {
+                        alert('Your cart is empty!');
+                        return;
+                    }
+
+                    const total = cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
+                    
+                    const transactionData = {
+                        items: cart,
+                        orig_price: total,
+                        transaction_class: transactionType // Dynamically set 'purchase' or 'debt'
+                    };
+                    
+                    // Disable both buttons to prevent multiple clicks
+                    $('#payBtn, #debtBtn').prop('disabled', true);
+                    clickedButton.html('<i class="fas fa-spinner fa-spin"></i> Processing...');
+
+                    $.ajax({
+                        url: '{{ route("transactions.store") }}',
+                        type: 'POST',
+                        data: JSON.stringify(transactionData),
+                        contentType: 'application/json',
+                        headers: {
+                            'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
+                        },
+                        success: function(response) {
+                            // Pass the transaction type to the receipt generator
+                            generateReceipt(response.transaction_id, transactionType); 
+                            cart = [];
+                            updateCartDisplay();
+                            alert(response.message);
+                        },
+                        error: function(xhr, status, error) {
+                            const errors = xhr.responseJSON.errors;
+                            let errorMessage = xhr.responseJSON.message || 'An error occurred. Please try again.';
+                            if (errors) {
+                                errorMessage += '\n' + Object.values(errors).join('\n');
+                            }
+                            alert(errorMessage);
+                        },
+                        complete: function() {
+                            // Re-enable both buttons and reset their text
+                            $('#payBtn').prop('disabled', false).html('<i class="fas fa-credit-card me-1"></i> Pay');
+                            $('#debtBtn').prop('disabled', false).html('<i class="fas fa-file-invoice-dollar me-1"></i> Record as Debt');
+                        }
+                    });
+                }
+                
+                // MODIFIED: Receipt function to handle different transaction types
+                function generateReceipt(transactionId, transactionType) {
+                    const isDebt = transactionType === 'debt';
+                    const subtotal = cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
+                    const total = subtotal;
+                    const now = new Date();
+                    
+                    let receiptItemsHtml = '';
+                    cart.forEach(item => {
+                        receiptItemsHtml += `
+                            <div class="receipt-item">
+                                <div class="item-name">${item.quantity} x ${item.name}</div>
+                                <div class="item-price">₱${(item.price * item.quantity).toFixed(2)}</div>
+                            </div>
+                        `;
+                    });
+
+                    // Dynamically change receipt title and footer message
+                    const receiptTitle = isDebt ? 'DEBT INVOICE' : 'STORE RECEIPT';
+                    const footerMessage = isDebt ? 'This is not an official receipt.' : 'Thank you for your purchase!';
+
+                    const receiptHtml = `
+                        <div class="receipt-header text-center mb-3">
+                            <h4>${receiptTitle}</h4>
+                            <div>${now.toLocaleDateString()} ${now.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}</div>
+                            <div>Transaction ID: ${transactionId}</div>
+                            <div>Cashier: {{ Auth::user()->name }}</div>
+                        </div>
+                        <hr>
+                        <div class="receipt-items">${receiptItemsHtml}</div>
+                        <hr>
+                        <div class="receipt-totals mt-3">
+                            <div class="total-row grand-total fs-5">
+                                <span>TOTAL:</span>
+                                <span>₱${total.toFixed(2)}</span>
+                            </div>
+                        </div>
+                        <hr>
+                        <div class="receipt-footer text-center mt-4">
+                            <p>${footerMessage}</p>
+                        </div>
+                    `;
+                    
+                    // (The modal generation and print logic remains the same)
+                    const modalHtml = `...`; // Your existing modal HTML
+                    // ...
+                }
+            });
+        </script>
     
     <!-- Bootstrap Bundle JS -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>

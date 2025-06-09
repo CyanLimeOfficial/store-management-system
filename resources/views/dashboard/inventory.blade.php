@@ -293,144 +293,144 @@
     <script src="https://cdn.datatables.net/1.11.5/js/jquery.dataTables.min.js"></script>
     <script src="https://cdn.datatables.net/1.11.5/js/dataTables.bootstrap4.min.js"></script>
       {{-- JS Custom Inline --}}
-  <script>
-    $(document).ready(function() {
-      var table = $('#inventory').DataTable({
-          paging: true,
-          searching: true,
-          ordering: true,
-          info: true,
-          responsive: true,
-            initComplete: function() {
-                this.api().rows().every(function() {
-                    var row = this.node();
-                    var productId = $(row).data('id');
-                    var productName = $(row).find('td:eq(0)').text().trim();
+      <script>
+        $(document).ready(function() {
+          var table = $('#inventory').DataTable({
+              paging: true,
+              searching: true,
+              ordering: true,
+              info: true,
+              responsive: true,
+                initComplete: function() {
+                    this.api().rows().every(function() {
+                        var row = this.node();
+                        var productId = $(row).data('id');
+                        var productName = $(row).find('td:eq(0)').text().trim();
 
-                    var actionsHtml = `
-                        <div class="d-flex justify-content-center">
-                            <div class="action-bar shadow-sm border rounded-pill px-3 py-1 bg-light">
-                                <a href="#" class="edit-product text-decoration-none" data-id="${productId}" data-bs-toggle="tooltip" title="Update ${productName}">
-                                    <i class="icon-pencil text-primary mx-2 fs-5"></i>
-                                </a>
-                                <a href="#" class="delete-product text-decoration-none" data-id="${productId}" data-name="${productName}" data-bs-toggle="tooltip" title="Delete ${productName}">
-                                    <i class="icon-trash text-danger mx-2 fs-5"></i>
-                                </a>
+                        var actionsHtml = `
+                            <div class="d-flex justify-content-center">
+                                <div class="action-bar shadow-sm border rounded-pill px-3 py-1 bg-light">
+                                    <a href="#" class="edit-product text-decoration-none" data-id="${productId}" data-bs-toggle="tooltip" title="Update ${productName}">
+                                        <i class="icon-pencil text-primary mx-2 fs-5"></i>
+                                    </a>
+                                    <a href="#" class="delete-product text-decoration-none" data-id="${productId}" data-name="${productName}" data-bs-toggle="tooltip" title="Delete ${productName}">
+                                        <i class="icon-trash text-danger mx-2 fs-5"></i>
+                                    </a>
+                                </div>
                             </div>
-                        </div>
-                    `;
+                        `;
 
-                    $(row).find('td:last').html(actionsHtml);
-                });
+                        $(row).find('td:last').html(actionsHtml);
+                    });
 
-                // Initialize Bootstrap tooltips
-                $('[data-bs-toggle="tooltip"]').tooltip();
-            }
+                    // Initialize Bootstrap tooltips
+                    $('[data-bs-toggle="tooltip"]').tooltip();
+                }
 
-      });
-        
-      // Edit product button
-      $(document).on('click', '.edit-product', function(e) {
-          e.stopPropagation();
-          var productId = $(this).data('id');
-          
-          $.get('/inventory/' + productId + '/edit', function(product) {
-              $('#editProductId').val(product.id);
-              $('#editProductName').val(product.product_name);
-              $('#editPrice').val(product.price);
-              $('#editQuantity').val(product.quantity);
-              $('#editCategory').val(product.category);
-              $('#editStockModalLabel').text('Update Product: ' + product.product_name);
-              $('#editStockForm').attr('action', '/inventory/' + productId + '/update');
+          });
+            
+          // Edit product button
+          $(document).on('click', '.edit-product', function(e) {
+              e.stopPropagation();
+              var productId = $(this).data('id');
               
-              $('#editStockModal').modal('show');
-          }).fail(function() {
-              alert('Error fetching product details');
+              $.get('/inventory/' + productId + '/edit', function(product) {
+                  $('#editProductId').val(product.id);
+                  $('#editProductName').val(product.product_name);
+                  $('#editPrice').val(product.price);
+                  $('#editQuantity').val(product.quantity);
+                  $('#editCategory').val(product.category);
+                  $('#editStockModalLabel').text('Update Product: ' + product.product_name);
+                  $('#editStockForm').attr('action', '/inventory/' + productId + '/update');
+                  
+                  $('#editStockModal').modal('show');
+              }).fail(function() {
+                  alert('Error fetching product details');
+              });
           });
-      });
 
-      // Delete product button
-      $(document).on('click', '.delete-product', function(e) {
-          e.stopPropagation();
-          var productId = $(this).data('id');
-          var productName = $(this).data('name');
-          
-          Swal.fire({
-              title: 'Confirm Deletion',
-              html: `<p>You are about to delete <strong>${productName}</strong>. This action cannot be undone.</p>
-                    <p><strong>Warning:</strong> Deleting this product will affect all transactions that include it.</p>
-                    <p>Type <strong>CONFIRM</strong> to proceed with deletion.</p>
-                    <input type="text" id="confirmDelete" class="swal2-input" placeholder="Type CONFIRM here">`,
-              icon: 'warning',
-              showCancelButton: true,
-              confirmButtonColor: '#d33',
-              cancelButtonColor: '#3085d6',
-              confirmButtonText: 'Delete',
-              preConfirm: () => {
-                  const confirmValue = document.getElementById('confirmDelete').value;
-                  if (confirmValue !== 'CONFIRM') {
-                      Swal.showValidationMessage('You must type CONFIRM to delete');
-                  }
-                  return confirmValue === 'CONFIRM';
-              }
-          }).then((result) => {
-              if (result.isConfirmed) {
-                  $.ajax({
-                      url: '/inventory/' + productId + '/delete',
-                      type: 'DELETE',
-                      data: {
-                          _token: $('meta[name="csrf-token"]').attr('content')
-                      },
-                      success: function(response) {
-                          Swal.fire(
-                              'Deleted!',
-                              'The product has been deleted.',
-                              'success'
-                          ).then(() => {
-                              location.reload();
-                          });
-                      },
-                      error: function(xhr) {
-                          Swal.fire(
-                              'Error!',
-                              'Failed to delete product: ' + (xhr.responseJSON?.message || 'Unknown error'),
-                              'error'
-                          );
+          // Delete product button
+          $(document).on('click', '.delete-product', function(e) {
+              e.stopPropagation();
+              var productId = $(this).data('id');
+              var productName = $(this).data('name');
+              
+              Swal.fire({
+                  title: 'Confirm Deletion',
+                  html: `<p>You are about to delete <strong>${productName}</strong>. This action cannot be undone.</p>
+                        <p><strong>Warning:</strong> Deleting this product will affect all transactions that include it.</p>
+                        <p>Type <strong>CONFIRM</strong> to proceed with deletion.</p>
+                        <input type="text" id="confirmDelete" class="swal2-input" placeholder="Type CONFIRM here">`,
+                  icon: 'warning',
+                  showCancelButton: true,
+                  confirmButtonColor: '#d33',
+                  cancelButtonColor: '#3085d6',
+                  confirmButtonText: 'Delete',
+                  preConfirm: () => {
+                      const confirmValue = document.getElementById('confirmDelete').value;
+                      if (confirmValue !== 'CONFIRM') {
+                          Swal.showValidationMessage('You must type CONFIRM to delete');
                       }
-                  });
-              }
+                      return confirmValue === 'CONFIRM';
+                  }
+              }).then((result) => {
+                  if (result.isConfirmed) {
+                      $.ajax({
+                          url: '/inventory/' + productId + '/delete',
+                          type: 'DELETE',
+                          data: {
+                              _token: $('meta[name="csrf-token"]').attr('content')
+                          },
+                          success: function(response) {
+                              Swal.fire(
+                                  'Deleted!',
+                                  'The product has been deleted.',
+                                  'success'
+                              ).then(() => {
+                                  location.reload();
+                              });
+                          },
+                          error: function(xhr) {
+                              Swal.fire(
+                                  'Error!',
+                                  'Failed to delete product: ' + (xhr.responseJSON?.message || 'Unknown error'),
+                                  'error'
+                              );
+                          }
+                      });
+                  }
+              });
           });
-      });
 
-      // Handle form submission
-      $('#editStockForm').on('submit', function(e) {
-          e.preventDefault();
-          
-          $.ajax({
-              url: $(this).attr('action'),
-              type: 'PUT',
-              data: $(this).serialize(),
-              success: function(response) {
-                  $('#editStockModal').modal('hide');
-                  Swal.fire(
-                      'Updated!',
-                      'Product has been updated.',
-                      'success'
-                  ).then(() => {
-                      location.reload();
-                  });
-              },
-              error: function(xhr) {
-                  Swal.fire(
-                      'Error!',
-                      'Failed to update product: ' + (xhr.responseJSON?.message || 'Unknown error'),
-                      'error'
-                  );
-              }
+          // Handle form submission
+          $('#editStockForm').on('submit', function(e) {
+              e.preventDefault();
+              
+              $.ajax({
+                  url: $(this).attr('action'),
+                  type: 'PUT',
+                  data: $(this).serialize(),
+                  success: function(response) {
+                      $('#editStockModal').modal('hide');
+                      Swal.fire(
+                          'Updated!',
+                          'Product has been updated.',
+                          'success'
+                      ).then(() => {
+                          location.reload();
+                      });
+                  },
+                  error: function(xhr) {
+                      Swal.fire(
+                          'Error!',
+                          'Failed to update product: ' + (xhr.responseJSON?.message || 'Unknown error'),
+                          'error'
+                      );
+                  }
+              });
           });
-      });
-    });
-  </script>
+        });
+      </script>
       {{-- Change store name --}}
   </body>
 </html>
