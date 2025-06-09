@@ -557,7 +557,7 @@
                     <div class="card-header">
                         <div class="d-flex align-items-center">
                             <i class="fas fa-cash-register me-3"></i>
-                            <h4 class="mb-0">Point of Sale v1.2</h4>
+                            <h4 class="mb-0">Point of Sale v1.3</h4>
                         </div>
                     </div>
                     <div class="card-body">
@@ -691,7 +691,11 @@
         {{-- JS Custom Inline --}}
         <script>
             $(document).ready(function() {
-                // Initialize DataTable
+                // -----------------------------------------------------------------
+                // INITIAL SETUP
+                // -----------------------------------------------------------------
+
+                // Initialize DataTable for products
                 const productsTable = $('#productsTable').DataTable({
                     pageLength: 5,
                     lengthMenu: [5, 10, 25],
@@ -703,17 +707,16 @@
                     ]
                 });
                 
-                // Search functionality
-                $('#searchProduct').on('keyup', function() {
-                    productsTable.search(this.value).draw();
-                });
-                
-                // Cart items array
+                // Global cart array to hold the current sale's items
                 let cart = [];
 
+                // -----------------------------------------------------------------
+                // CORE FUNCTIONS
+                // -----------------------------------------------------------------
+
                 /**
-                * Reusable function to calculate and display the change due.
-                */
+                 * Reusable function to calculate and display the change due in real-time.
+                 */
                 function updateChangeCalculation() {
                     const cashReceived = parseFloat($('#cashTendered').val()) || 0;
                     const total = cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
@@ -722,8 +725,9 @@
                 }
 
                 /**
-                * Main function to update the entire cart display.
-                */
+                 * Main function to update the entire cart display UI.
+                 * This function is called whenever the cart changes.
+                 */
                 function updateCartDisplay() {
                     const cartItems = $('#cartItems');
                     const itemCount = $('#itemCount');
@@ -762,13 +766,115 @@
                         cartItems.html(cartHtml);
                     }
                     
+                    // After the cart and total are updated, always recalculate the change.
                     updateChangeCalculation();
                 }
-                
-                // --- EVENT LISTENERS ---
 
+                /**
+                * Final function to process the transaction via AJAX.
+                * Builds and displays a detailed summary on success.
+                */
+                function processTransaction(transactionType, clickedButton, change = 0) {
+                    const total = cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
+                    const transactionData = {
+                        items: cart,
+                        orig_price: total,
+                        orig_change: change,
+                        transaction_class: transactionType
+                    };
+
+                    $('.action-buttons .btn').prop('disabled', true);
+                    clickedButton.html('<i class="fas fa-spinner fa-spin"></i>');
+
+                    $.ajax({
+                        url: '{{ route("transactions.store") }}',
+                        type: 'POST',
+                        data: JSON.stringify(transactionData),
+                        contentType: 'application/json',
+                        headers: { 'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content') },
+                        success: function(response) {
+                            // Build the HTML for the transaction summary popup
+                            let itemsHtml = '';
+                            cart.forEach(item => {
+                                const itemTotal = (item.price * item.quantity).toFixed(2);
+                                itemsHtml += `
+                                    <tr>
+                                        <td>${item.quantity} x ${item.name}</td>
+                                        <td style="text-align: right;">₱${itemTotal}</td>
+                                    </tr>
+                                `;
+                            });
+
+                            let totalsHtml = `
+                                <tr class="summary-item">
+                                    <td>Subtotal</td>
+                                    <td style="text-align: right;">₱${total.toFixed(2)}</td>
+                                </tr>
+                            `;
+
+                            if (transactionType === 'purchase') {
+                                const cashReceived = total + change;
+                                totalsHtml += `
+                                    <tr>
+                                        <td>Cash Tendered</td>
+                                        <td style="text-align: right;">₱${cashReceived.toFixed(2)}</td>
+                                    </tr>
+                                    <tr class="summary-total">
+                                        <td>Change Due</td>
+                                        <td style="text-align: right;">₱${change.toFixed(2)}</td>
+                                    </tr>
+                                `;
+                            } else { // 'debt'
+                                totalsHtml += `
+                                    <tr class="summary-total">
+                                        <td>Total Debt</td>
+                                        <td style="text-align: right;">₱${total.toFixed(2)}</td>
+                                    </tr>
+                                `;
+                            }
+
+                            const summaryHtml = `
+                                <table class="transaction-summary-table">
+                                    ${itemsHtml}
+                                    ${totalsHtml}
+                                </table>
+                            `;
+                            
+                            // Show the success popup with the detailed summary
+                            Swal.fire({
+                                icon: 'success',
+                                title: 'Transaction Complete!',
+                                html: summaryHtml,
+                                confirmButtonText: 'Start New Sale',
+                                width: '450px'
+                            }).then(() => {
+                                location.reload();
+                            });
+                        },
+                        error: function(xhr) {
+                            Swal.fire("Transaction Failed", xhr.responseJSON.message || 'An unknown error occurred.', "error");
+                            // Re-enable buttons on failure to allow user to try again
+                            $('.action-buttons .btn').prop('disabled', false);
+                            $('#payBtn').html('<i class="fas fa-credit-card me-1"></i>Pay');
+                            $('#debtBtn').html('<i class="fas fa-file-invoice-dollar me-1"></i>Debt');
+                            $('#voidBtn').html('<i class="fas fa-times-circle me-1"></i>Void');
+                        }
+                    });
+                }
+
+                // -----------------------------------------------------------------
+                // EVENT LISTENERS
+                // -----------------------------------------------------------------
+
+                // Trigger change calculation when user types in the cash field.
                 $('#cashTendered').on('keyup input', updateChangeCalculation);
+                
+                // Search products table
+                $('#searchProduct').on('keyup', function() {
+                    productsTable.search(this.value).draw();
+                });
 
+                // Add item to cart
                 $(document).on('click', '.add-to-cart', function() {
                     const productId = $(this).data('id');
                     const row = $(this).closest('tr');
@@ -795,6 +901,7 @@
                     updateCartDisplay();
                 });
                 
+                // Adjust quantity from cart
                 $(document).on('click', '.quantity-btn.plus', function() {
                     const item = cart.find(i => i.id === $(this).data('id'));
                     const stock = parseInt($(`#productsTable button[data-id="${item.id}"]`).closest('tr').find('td:eq(3)').text());
@@ -811,11 +918,14 @@
                         updateCartDisplay();
                     }
                 });
+
+                // Remove item from cart
                 $(document).on('click', '.remove-btn', function() {
                     cart = cart.filter(i => i.id !== $(this).data('id'));
                     updateCartDisplay();
                 });
                 
+                // Void sale button
                 $('#voidBtn').on('click', function() {
                     if (cart.length > 0) {
                         Swal.fire({
@@ -836,6 +946,7 @@
                     }
                 });
 
+                // Pay button
                 $('#payBtn').on('click', function() {
                     if (cart.length === 0) {
                         Swal.fire("Cart is Empty", "Please add products to the cart.", "warning");
@@ -852,6 +963,7 @@
                     processTransaction('purchase', $(this), change);
                 });
 
+                // Debt button
                 $('#debtBtn').on('click', function() {
                     if (cart.length === 0) {
                         Swal.fire("Cart is Empty", "Please add products to the cart.", "warning");
@@ -859,52 +971,6 @@
                     }
                     processTransaction('debt', $(this));
                 });
-
-                /**
-                * Final function to process the transaction via AJAX.
-                */
-                function processTransaction(transactionType, clickedButton, change = 0) {
-                    const total = cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
-                    
-                    const transactionData = {
-                        items: cart,
-                        orig_price: total,
-                        orig_change: change, // MODIFIED: Add the 'change' to the data sent to the server
-                        transaction_class: transactionType
-                    };
-
-                    $('.action-buttons .btn').prop('disabled', true);
-                    clickedButton.html('<i class="fas fa-spinner fa-spin"></i>');
-
-                    $.ajax({
-                        url: '{{ route("transactions.store") }}',
-                        type: 'POST',
-                        data: JSON.stringify(transactionData),
-                        contentType: 'application/json',
-                        headers: { 'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content') },
-                        success: function(response) {
-                            let successMessage = `Change Due: <strong>₱${change.toFixed(2)}</strong>`;
-                            if (transactionType === 'debt') {
-                                successMessage = "The debt has been recorded successfully.";
-                            }
-                            Swal.fire({
-                                icon: 'success',
-                                title: 'Transaction Complete!',
-                                html: successMessage,
-                                confirmButtonText: 'New Sale'
-                            }).then(() => {
-                                location.reload();
-                            });
-                        },
-                        error: function(xhr) {
-                            Swal.fire("Transaction Failed", xhr.responseJSON.message || 'An unknown error occurred.', "error");
-                            $('.action-buttons .btn').prop('disabled', false);
-                            $('#payBtn').html('<i class="fas fa-credit-card me-1"></i>Pay');
-                            $('#debtBtn').html('<i class="fas fa-file-invoice-dollar me-1"></i>Debt');
-                            $('#voidBtn').html('<i class="fas fa-times-circle me-1"></i>Void');
-                        }
-                    });
-                }
             });
         </script>
     
