@@ -60,20 +60,6 @@ This project is built using a modern and robust tech stack:
 
 ---
 
-## 📸 Screenshots
-
-*(Replace the placeholder URLs with links to your actual screenshots)*
-
-| POS Interface                                       | Inventory Management                                     |
-| ----------------------------------------------------- | -------------------------------------------------------- |
-| ![Point of Sale Interface](https://via.placeholder.com/600x400.png?text=POS+Interface) | ![Inventory Management Page](https://via.placeholder.com/600x400.png?text=Inventory+Page) |
-
-| Transaction History                                    | Analytics Dashboard                                     |
-| ------------------------------------------------------ | ------------------------------------------------------- |
-| ![Transaction History Page](https://via.placeholder.com/600x400.png?text=Transaction+History) | ![Analytics Dashboard](https://via.placeholder.com/600x400.png?text=Analytics+Dashboard) |
-
----
-
 ## 🚀 Getting Started
 
 Follow these steps to get a local copy up and running.
@@ -100,4 +86,4 @@ Distributed under the MIT License. See `LICENSE.md` file for more information.
 
 ## 📞 Contact
 
-Your Name - jamesataturuk@gmail.com
+Dexter Lanzarrote - jamesataturuk@gmail.com
