@@ -346,10 +346,6 @@
         }
 
 
-        .grid-col-span-2 {
-            grid-column: span 2;
-        }
-
  
         .action-buttons .btn {
             height: 100%;
@@ -561,7 +557,7 @@
                     <div class="card-header">
                         <div class="d-flex align-items-center">
                             <i class="fas fa-cash-register me-3"></i>
-                            <h4 class="mb-0">Point of Sale v1.1</h4>
+                            <h4 class="mb-0">Point of Sale v1.2</h4>
                         </div>
                     </div>
                     <div class="card-body">
@@ -628,21 +624,31 @@
                                             </div>
                                             
                                             <div class="cart-summary">
-                                                <div class="summary-row">
-                                                    <span>Subtotal:</span>
-                                                    <span id="subtotal">₱0.00</span>
+                                                <label for="cashTendered" class="form-label fw-bold">Cash Received</label>             
+                                                <div class="input-group">
+                                                    <input type="number" id="cashTendered" class="form-control" placeholder="0.00" step="0.01" min="0">
                                                 </div>
 
                                                 <div class="summary-row summary-total">
                                                     <span>Total:</span>
                                                     <span id="total">₱0.00</span>
                                                 </div>
-                                                
-                                                <div class="action-buttons">
-                                                    <button class="btn btn-danger" id="voidBtn">Void</button>
-                                                    <button class="btn btn-warning" id="debtBtn">Debt</button>
 
-                                                    <button class="btn btn-success grid-col-span-2" id="payBtn">Pay</button>
+                                                <div class="summary-row text-primary fw-bold mt-2" style="font-size: 1.1rem;">
+                                                    <span>Change:</span>
+                                                    <span id="changeDue">₱0.00</span>
+                                                </div>
+                                                <div class="action-buttons">
+                                                    <button class="btn btn-danger btn-sm" id="voidBtn">
+                                                        <i class="me-1"></i>Void
+                                                    </button>
+                                                    <button class="btn btn-warning btn-sm" id="debtBtn">
+                                                        <i class="me-1"></i>Debt
+                                                    </button>
+
+                                                    <button class="btn btn-success btn-lg grid-col-span-2" id="payBtn">
+                                                        <i class="me-1"></i>Pay
+                                                    </button> 
                                                 </div>
                                             </div>
                                         </div>
@@ -685,7 +691,6 @@
         {{-- JS Custom Inline --}}
         <script>
             $(document).ready(function() {
-                // (Your existing DataTable, add-to-cart, and cart update functions remain the same...)
                 // Initialize DataTable
                 const productsTable = $('#productsTable').DataTable({
                     pageLength: 5,
@@ -705,43 +710,20 @@
                 
                 // Cart items array
                 let cart = [];
-                
-                // Add to cart functionality
-                $(document).on('click', '.add-to-cart', function() {
-                    const productId = $(this).data('id');
-                    const row = $(this).closest('tr');
-                    const productName = row.find('td:eq(1)').text().trim();
-                    const productPrice = parseFloat(row.find('td:eq(2)').text().replace('₱', '').replace(',', ''));
-                    const stockText = row.find('td:eq(3)').text().trim();
-                    const stock = parseInt(stockText);
-                    
-                    const existingItem = cart.find(item => item.id === productId);
-                    
-                    if (existingItem) {
-                        if (existingItem.quantity < stock) {
-                            existingItem.quantity++;
-                        } else {
-                            alert(`Only ${stock} units available in stock!`);
-                            return;
-                        }
-                    } else {
-                        if (stock > 0) {
-                            cart.push({
-                                id: productId,
-                                name: productName,
-                                price: productPrice,
-                                quantity: 1
-                            });
-                        } else {
-                            alert('This product is out of stock!');
-                            return;
-                        }
-                    }
-                    
-                    updateCartDisplay();
-                });
-                
-                // Update cart display
+
+                /**
+                * Reusable function to calculate and display the change due.
+                */
+                function updateChangeCalculation() {
+                    const cashReceived = parseFloat($('#cashTendered').val()) || 0;
+                    const total = cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
+                    const change = (cashReceived > 0 && cashReceived >= total) ? cashReceived - total : 0;
+                    $('#changeDue').text('₱' + change.toFixed(2));
+                }
+
+                /**
+                * Main function to update the entire cart display.
+                */
                 function updateCartDisplay() {
                     const cartItems = $('#cartItems');
                     const itemCount = $('#itemCount');
@@ -749,197 +731,179 @@
                     const totalEl = $('#total');
                     
                     if (cart.length === 0) {
-                        cartItems.html(`
-                            <div class="empty-cart">
-                                <i class="fas fa-shopping-cart"></i>
-                                <h5>Your cart is empty</h5>
-                                <p class="text-center">Add products by clicking 'Add' in the product list</p>
-                            </div>
-                        `);
+                        cartItems.html(`<div class="empty-cart"><i class="fas fa-shopping-cart"></i><h5>Your cart is empty</h5><p class="text-center">Add products by clicking 'Add'</p></div>`);
                         itemCount.text('0 items');
                         subtotalEl.text('₱0.00');
                         totalEl.text('₱0.00');
-                        return;
+                    } else {
+                        const totalItems = cart.reduce((sum, item) => sum + item.quantity, 0);
+                        itemCount.text(`${totalItems} ${totalItems === 1 ? 'item' : 'items'}`);
+                        
+                        const subtotal = cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
+                        totalEl.text(`₱${subtotal.toFixed(2)}`);
+                        subtotalEl.text(`₱${subtotal.toFixed(2)}`);
+
+                        let cartHtml = '';
+                        cart.forEach(item => {
+                            cartHtml += `
+                                <div class="cart-item">
+                                    <div class="item-info">
+                                        <div class="item-name fw-bold small">${item.name}</div>
+                                        <div class="item-price text-muted small">₱${item.price.toFixed(2)}</div>
+                                    </div>
+                                    <div class="item-quantity">
+                                        <button class="btn btn-sm btn-outline-secondary py-0 px-2 quantity-btn minus" data-id="${item.id}">-</button>
+                                        <span class="quantity-value mx-2">${item.quantity}</span>
+                                        <button class="btn btn-sm btn-outline-secondary py-0 px-2 quantity-btn plus" data-id="${item.id}">+</button>
+                                    </div>
+                                    <button class="btn btn-sm btn-outline-danger py-0 px-2 remove-btn ms-2" data-id="${item.id}"><i class="fas fa-times"></i></button>
+                                </div>`;
+                        });
+                        cartItems.html(cartHtml);
                     }
-                    const totalItems = cart.reduce((sum, item) => sum + item.quantity, 0);
-                    itemCount.text(`${totalItems} ${totalItems === 1 ? 'item' : 'items'}`);
                     
-                    const subtotal = cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
-                    const total = subtotal;
-                    
-                    subtotalEl.text(`₱${subtotal.toFixed(2)}`);
-                    totalEl.text(`₱${total.toFixed(2)}`);
-                    let cartHtml = '';
-                    cart.forEach(item => {
-                        cartHtml += `
-                            <div class="cart-item">
-                                <div class="item-info">
-                                    <div class="item-name fw-bold">${item.name}</div>
-                                    <div class="item-price text-muted">₱${item.price.toFixed(2)} each</div>
-                                </div>
-                                <div class="item-quantity">
-                                    <button class="btn btn-sm btn-outline-secondary quantity-btn minus" data-id="${item.id}">-</button>
-                                    <span class="quantity-value mx-2">${item.quantity}</span>
-                                    <button class="btn btn-sm btn-outline-secondary quantity-btn plus" data-id="${item.id}">+</button>
-                                </div>
-                                <div class="item-total fw-bold">₱${(item.price * item.quantity).toFixed(2)}</div>
-                                <button class="btn btn-sm btn-outline-danger remove-btn ms-2" data-id="${item.id}">
-                                    <i class="fas fa-trash-alt"></i>
-                                </button>
-                            </div>
-                        `;
-                    });
-                    
-                    cartItems.html(cartHtml);
+                    updateChangeCalculation();
                 }
                 
-                // Adjust item quantity
-                $(document).on('click', '.quantity-btn.plus', function() {
+                // --- EVENT LISTENERS ---
+
+                $('#cashTendered').on('keyup input', updateChangeCalculation);
+
+                $(document).on('click', '.add-to-cart', function() {
                     const productId = $(this).data('id');
-                    const item = cart.find(item => item.id === productId);
-                    const row = productsTable.rows().nodes().to$().find(`.add-to-cart[data-id="${productId}"]`).closest('tr');
+                    const row = $(this).closest('tr');
+                    const productName = row.find('td:eq(1)').text().trim();
+                    const productPrice = parseFloat(row.find('td:eq(2)').text().replace('₱', '').replace(',', ''));
                     const stock = parseInt(row.find('td:eq(3)').text().trim());
-                    if (item && item.quantity < stock) {
-                        item.quantity++;
-                        updateCartDisplay();
-                    } else {
-                        alert(`Only ${stock} units available in stock!`);
-                    }
-                });
-                $(document).on('click', '.quantity-btn.minus', function() {
-                    const productId = $(this).data('id');
-                    const item = cart.find(item => item.id === productId);
+                    const existingItem = cart.find(item => item.id === productId);
                     
-                    if (item) {
-                        item.quantity--;
-                        if (item.quantity <= 0) {
-                            cart = cart.filter(i => i.id !== productId);
+                    if (existingItem) {
+                        if (existingItem.quantity < stock) {
+                            existingItem.quantity++;
+                        } else {
+                            Swal.fire('Stock Limit', `Only ${stock} units available in stock!`, 'warning');
+                            return;
                         }
-                        updateCartDisplay();
+                    } else {
+                        if (stock > 0) {
+                            cart.push({ id: productId, name: productName, price: productPrice, quantity: 1 });
+                        } else {
+                            Swal.fire('Out of Stock', 'This product is currently unavailable.', 'error');
+                            return;
+                        }
                     }
-                });
-                
-                // Remove item from cart
-                $(document).on('click', '.remove-btn', function() {
-                    const productId = $(this).data('id');
-                    cart = cart.filter(item => item.id !== productId);
                     updateCartDisplay();
                 });
                 
-                // Void sale button
-                $('#voidBtn').on('click', function() {
-                    if (cart.length > 0 && confirm('Are you sure you want to void this sale?')) {
-                        cart = [];
+                $(document).on('click', '.quantity-btn.plus', function() {
+                    const item = cart.find(i => i.id === $(this).data('id'));
+                    const stock = parseInt($(`#productsTable button[data-id="${item.id}"]`).closest('tr').find('td:eq(3)').text());
+                    if(item.quantity < stock) {
+                        item.quantity++;
                         updateCartDisplay();
                     }
                 });
-
-                // MODIFIED: 'Pay' button now calls the reusable function
-                $('#payBtn').on('click', function() {
-                    processTransaction('purchase', $(this));
+                $(document).on('click', '.quantity-btn.minus', function() {
+                    const item = cart.find(i => i.id === $(this).data('id'));
+                    if (item) {
+                        item.quantity--;
+                        if (item.quantity <= 0) cart = cart.filter(i => i.id !== item.id);
+                        updateCartDisplay();
+                    }
+                });
+                $(document).on('click', '.remove-btn', function() {
+                    cart = cart.filter(i => i.id !== $(this).data('id'));
+                    updateCartDisplay();
+                });
+                
+                $('#voidBtn').on('click', function() {
+                    if (cart.length > 0) {
+                        Swal.fire({
+                            title: 'Are you sure?',
+                            text: "This will clear the entire cart.",
+                            icon: 'warning',
+                            showCancelButton: true,
+                            confirmButtonColor: '#d33',
+                            cancelButtonColor: '#3085d6',
+                            confirmButtonText: 'Yes, void it!'
+                        }).then((result) => {
+                            if (result.isConfirmed) {
+                                cart = [];
+                                updateCartDisplay();
+                                $('#cashTendered').val('');
+                            }
+                        });
+                    }
                 });
 
-                // NEW: 'Record as Debt' button click handler
+                $('#payBtn').on('click', function() {
+                    if (cart.length === 0) {
+                        Swal.fire("Cart is Empty", "Please add products to the cart.", "warning");
+                        return;
+                    }
+                    const total = cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
+                    const cashReceived = parseFloat($('#cashTendered').val());
+
+                    if (isNaN(cashReceived) || cashReceived < total) {
+                        Swal.fire("Insufficient Cash", "Please enter a valid amount that is equal to or greater than the total.", "error");
+                        return;
+                    }
+                    const change = cashReceived - total;
+                    processTransaction('purchase', $(this), change);
+                });
+
                 $('#debtBtn').on('click', function() {
+                    if (cart.length === 0) {
+                        Swal.fire("Cart is Empty", "Please add products to the cart.", "warning");
+                        return;
+                    }
                     processTransaction('debt', $(this));
                 });
 
-                // NEW: Reusable function to process the transaction via AJAX
-                function processTransaction(transactionType, clickedButton) {
-                    if (cart.length === 0) {
-                        alert('Your cart is empty!');
-                        return;
-                    }
-
+                /**
+                * Final function to process the transaction via AJAX.
+                */
+                function processTransaction(transactionType, clickedButton, change = 0) {
                     const total = cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
                     
                     const transactionData = {
                         items: cart,
                         orig_price: total,
-                        transaction_class: transactionType // Dynamically set 'purchase' or 'debt'
+                        orig_change: change, // MODIFIED: Add the 'change' to the data sent to the server
+                        transaction_class: transactionType
                     };
-                    
-                    // Disable both buttons to prevent multiple clicks
-                    $('#payBtn, #debtBtn').prop('disabled', true);
-                    clickedButton.html('<i class="fas fa-spinner fa-spin"></i> Processing...');
+
+                    $('.action-buttons .btn').prop('disabled', true);
+                    clickedButton.html('<i class="fas fa-spinner fa-spin"></i>');
 
                     $.ajax({
                         url: '{{ route("transactions.store") }}',
                         type: 'POST',
                         data: JSON.stringify(transactionData),
                         contentType: 'application/json',
-                        headers: {
-                            'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
-                        },
+                        headers: { 'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content') },
                         success: function(response) {
-                            // Pass the transaction type to the receipt generator
-                            generateReceipt(response.transaction_id, transactionType); 
-                            cart = [];
-                            updateCartDisplay();
-                            alert(response.message);
-                        },
-                        error: function(xhr, status, error) {
-                            const errors = xhr.responseJSON.errors;
-                            let errorMessage = xhr.responseJSON.message || 'An error occurred. Please try again.';
-                            if (errors) {
-                                errorMessage += '\n' + Object.values(errors).join('\n');
+                            let successMessage = `Change Due: <strong>₱${change.toFixed(2)}</strong>`;
+                            if (transactionType === 'debt') {
+                                successMessage = "The debt has been recorded successfully.";
                             }
-                            alert(errorMessage);
+                            Swal.fire({
+                                icon: 'success',
+                                title: 'Transaction Complete!',
+                                html: successMessage,
+                                confirmButtonText: 'New Sale'
+                            }).then(() => {
+                                location.reload();
+                            });
                         },
-                        complete: function() {
-                            // Re-enable both buttons and reset their text
-                            $('#payBtn').prop('disabled', false).html('<i class="fas fa-credit-card me-1"></i> Pay');
-                            $('#debtBtn').prop('disabled', false).html('<i class="fas fa-file-invoice-dollar me-1"></i> Record as Debt');
+                        error: function(xhr) {
+                            Swal.fire("Transaction Failed", xhr.responseJSON.message || 'An unknown error occurred.', "error");
+                            $('.action-buttons .btn').prop('disabled', false);
+                            $('#payBtn').html('<i class="fas fa-credit-card me-1"></i>Pay');
+                            $('#debtBtn').html('<i class="fas fa-file-invoice-dollar me-1"></i>Debt');
+                            $('#voidBtn').html('<i class="fas fa-times-circle me-1"></i>Void');
                         }
                     });
-                }
-                
-                // MODIFIED: Receipt function to handle different transaction types
-                function generateReceipt(transactionId, transactionType) {
-                    const isDebt = transactionType === 'debt';
-                    const subtotal = cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
-                    const total = subtotal;
-                    const now = new Date();
-                    
-                    let receiptItemsHtml = '';
-                    cart.forEach(item => {
-                        receiptItemsHtml += `
-                            <div class="receipt-item">
-                                <div class="item-name">${item.quantity} x ${item.name}</div>
-                                <div class="item-price">₱${(item.price * item.quantity).toFixed(2)}</div>
-                            </div>
-                        `;
-                    });
-
-                    // Dynamically change receipt title and footer message
-                    const receiptTitle = isDebt ? 'DEBT INVOICE' : 'STORE RECEIPT';
-                    const footerMessage = isDebt ? 'This is not an official receipt.' : 'Thank you for your purchase!';
-
-                    const receiptHtml = `
-                        <div class="receipt-header text-center mb-3">
-                            <h4>${receiptTitle}</h4>
-                            <div>${now.toLocaleDateString()} ${now.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}</div>
-                            <div>Transaction ID: ${transactionId}</div>
-                            <div>Cashier: {{ Auth::user()->name }}</div>
-                        </div>
-                        <hr>
-                        <div class="receipt-items">${receiptItemsHtml}</div>
-                        <hr>
-                        <div class="receipt-totals mt-3">
-                            <div class="total-row grand-total fs-5">
-                                <span>TOTAL:</span>
-                                <span>₱${total.toFixed(2)}</span>
-                            </div>
-                        </div>
-                        <hr>
-                        <div class="receipt-footer text-center mt-4">
-                            <p>${footerMessage}</p>
-                        </div>
-                    `;
-                    
-                    // (The modal generation and print logic remains the same)
-                    const modalHtml = `...`; // Your existing modal HTML
-                    // ...
                 }
             });
         </script>

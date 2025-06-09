@@ -15,6 +15,7 @@ return new class extends Migration
             $table->id();
             $table->foreignId('costumer_store_id')->constrained('store_info')->onDelete('cascade');
             $table->float('orig_price');
+            $table->float('orig_change');
             $table->enum('transaction_class', ['purchase', 'debt' ])->default('purchase');
             $table->timestamps();
         });

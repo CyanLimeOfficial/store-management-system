@@ -12,6 +12,7 @@ class Transaction extends Model
     protected $fillable = [
         'costumer_store_id',
         'orig_price',
+        'orig_change',
         'transaction_class'
     ];
 
