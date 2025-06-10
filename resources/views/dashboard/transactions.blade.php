@@ -148,15 +148,57 @@
                       </div>
                   </div>
               @endif
-            <div class="row quick-action-toolbar">
-              <div class="col-md-12 grid-margin">
-              <div class="card">
-                  <div class="card-body">
-                      <h4 class="card-title">Products Inventory</h4>
+              <div class="container-fluid my-4">
+                  <div class="row">
+                      <div class="col-lg-4">
+                          <div class="card">
+                              <div class="card-body">
+                                  <h4 class="card-title">Transaction Details</h4>
+                                  <hr>
+                                  <div id="transaction-details">
+                                      <p class="text-muted text-center mt-5">Click on a transaction to see its details.</p>
+                                  </div>
+                              </div>
+                          </div>
+                      </div>
+
+                      <div class="col-lg-8">
+                          <div class="card">
+                              <div class="card-body">
+                                  <h4 class="card-title">Transaction Log</h4>
+                                  <div class="table-responsive">
+                                      <table id="transactions-table" class="table table-hover" style="width:100%">
+                                          <thead>
+                                              <tr>
+                                                  <th>ID</th>
+                                                  <th>Total Price</th>
+                                                  <th>Type</th>
+                                                  <th>Date</th>
+                                              </tr>
+                                          </thead>
+                                          <tbody>
+                                              {{-- Populate table rows from the database --}}
+                                              @foreach($transactions as $transaction)
+                                                  {{-- Add a data-id attribute to each row for JavaScript to use --}}
+                                                  <tr data-id="{{ $transaction->id }}">
+                                                      <td>{{ $transaction->id }}</td>
+                                                      <td>₱{{ number_format($transaction->orig_price, 2) }}</td>
+                                                      <td>
+                                                          <span class="badge badge-{{ $transaction->transaction_class == 'debt' ? 'warning' : 'success' }}">
+                                                              {{ ucfirst($transaction->transaction_class) }}
+                                                          </span>
+                                                      </td>
+                                                      <td>{{ $transaction->created_at->format('M d, Y h:i A') }}</td>
+                                                  </tr>
+                                              @endforeach
+                                          </tbody>
+                                      </table>
+                                  </div>
+                              </div>
+                          </div>
+                      </div>
                   </div>
               </div>
-              </div>
-            </div>
           </div>
           <!-- content-wrapper ends -->
           <!-- partial -->
@@ -187,6 +229,75 @@
     <script src="https://cdn.datatables.net/1.11.5/js/jquery.dataTables.min.js"></script>
     <script src="https://cdn.datatables.net/1.11.5/js/dataTables.bootstrap4.min.js"></script>
       {{-- JS Custom Inline --}}
+      <script>
+        $(document).ready(function() {
+            // 1. INITIALIZE THE DATATABLE FOR SORTING AND SEARCHING
+            const table = $('#transactions-table').DataTable({
+                "order": [[ 0, "desc" ]] // Order by the first column (ID) descending
+            });
 
+            // 2. CREATE THE CLICK EVENT LISTENER ON TABLE ROWS
+            $('#transactions-table tbody').on('click', 'tr', function() {
+                // Get the transaction ID from the data-id attribute
+                const transactionId = $(this).data('id');
+                const detailsContainer = $('#transaction-details');
+
+                // Highlight the selected row
+                table.$('tr.table-primary').removeClass('table-primary');
+                $(this).addClass('table-primary');
+
+                // Show a loading state
+                detailsContainer.html('<p class="text-muted text-center mt-5">Loading...</p>');
+
+                if (transactionId) {
+                    // 3. MAKE AN AJAX CALL TO OUR LARAVEL API ENDPOINT
+                    $.ajax({
+                        url: `/api/transactions/${transactionId}`,
+                        method: 'GET',
+                        success: function(response) {
+                            // 4. BUILD THE HTML FOR THE DETAILS VIEW
+                            let detailsHtml = `
+                                <div class="text-center">
+                                    <h5>Receipt</h5>
+                                    <h6>Transaction #${response.id}</h6>
+                                    <p class="text-muted small">${new Date(response.created_at).toLocaleString()}</p>
+                                </div>
+                                <hr>
+                                <ul class="list-unstyled receipt-items my-3 py-3">`;
+                            
+                            // Loop through the items in the transaction
+                            response.items.forEach(item => {
+                                detailsHtml += `
+                                    <li class="d-flex justify-content-between">
+                                        <span>
+                                            ${item.quantity}x ${item.product ? item.product.product_name : 'N/A'}
+                                        </span>
+                                        <strong>₱${(item.quantity * item.price).toFixed(2)}</strong>
+                                    </li>`;
+                            });
+
+                            detailsHtml += `</ul>
+                                <div class="font-weight-bold">
+                                    <div class="d-flex justify-content-between">
+                                        <span>Total:</span>
+                                        <span>₱${parseFloat(response.orig_price).toFixed(2)}</span>
+                                    </div>
+                                    <div class="d-flex justify-content-between">
+                                        <span>Change:</span>
+                                        <span>₱${parseFloat(response.orig_change).toFixed(2)}</span>
+                                    </div>
+                                </div>`;
+
+                            // 5. RENDER THE BUILT HTML IN THE LEFT PANEL
+                            detailsContainer.html(detailsHtml);
+                        },
+                        error: function() {
+                            detailsContainer.html('<p class="text-danger text-center mt-5">Could not load transaction details.</p>');
+                        }
+                    });
+                }
+            });
+        });
+      </script>
   </body>
 </html>

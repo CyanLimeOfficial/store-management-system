@@ -7,6 +7,8 @@ use App\Http\Controllers\GetStarted;
 use App\Http\Controllers\Home;
 use App\Http\Controllers\Products_Inventory;
 use App\Http\Controllers\POS;
+use App\Http\Controllers\TransactionsView; // <--- 1. IMPORT YOUR NEW CONTROLLER
+
 // Import Middleware
 use App\Http\Middleware\CheckStoreExist;
 
@@ -32,25 +34,25 @@ Route::middleware(['auth'])->group(function () {
 
 
 
-// Group routes that require authentication
+// Group routes that require authentication and a store to exist
 Route::middleware(['auth', 'check.store_info'])->group(function () {
     Route::get('/home', function () {
         return view('dashboard.index');
-    }); 
+    });
     // Add these new routes for store name change
     Route::post('/store/update-name', [Home::class, 'updateStoreName'])->name('store.updateName');
 
 
     Route::get('/inventory', function () {
         return view('dashboard.inventory');
-    }); 
+    });
     Route::get('/inventory/add-products', function () {
         return view('dashboard.inventory_add');
-    }); 
+    });
 
     Route::get('/pos', function () {
         return view('dashboard.pos');
-    }); 
+    });
     Route::post('/pos/transactions', [POS::class, 'store'])->name('transactions.store')->middleware('auth');
 
     // Handle form submission (no need for GET here)
@@ -60,4 +62,16 @@ Route::middleware(['auth', 'check.store_info'])->group(function () {
     Route::get('/inventory/{product}/edit', [Products_Inventory::class, 'edit_stock'])->name('edit.product');
     Route::put('/inventory/{product}/update', [Products_Inventory::class, 'update_stock'])->name('edit.quantity.product');
     Route::delete('/inventory/{product}/delete', [Products_Inventory::class, 'delete_product'])->name('delete.product');
+
+    // ▼▼▼ 2. ADD THE NEW TRANSACTION ROUTES HERE ▼▼▼
+
+    // Route to display the transactions page UI
+    Route::get('/transactions', [TransactionsView::class, 'index'])->name('transactions.index');
+
+    // API routes for the page to fetch data dynamically
+    Route::prefix('api')->name('api.')->group(function () {
+        Route::get('/transactions', [TransactionsView::class, 'list'])->name('transactions.list');
+        Route::get('/transactions/{transaction}', [TransactionsView::class, 'show'])->name('transactions.show');
+    });
+    // ▲▲▲ END OF NEW ROUTES ▲▲▲
 });

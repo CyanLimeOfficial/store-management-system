@@ -112,7 +112,7 @@
             </li>
             <li class="nav-item nav-category"><span class="nav-link">Extras</span></li>
             <li class="nav-item">
-              <a class="nav-link" href="pages/icons/simple-line-icons.html">
+              <a class="nav-link" href="/transactions">
                 <span class="menu-title">Transactions</span>
                 <i class="icon-wallet menu-icon"></i>
               </a>
