@@ -29,6 +29,7 @@
         $store = StoreInfo::where('user_id', auth()->id())->first();
         $products = [];
         $products = Product_Inventory::where('store_id', $store->id)->get();
+        $products = Product_Inventory::where('store_id', $store->id)->get();
       @endphp
 
   </head>
@@ -105,7 +106,7 @@
               </a>
             </li>
             <li class="nav-item">
-              <a class="nav-link" href="pages/forms/basic_elements.html">
+              <a class="nav-link" href="/store-details">
                 <span class="menu-title">Store Details</span>
                 <i class="icon-book-open menu-icon"></i>
               </a>
