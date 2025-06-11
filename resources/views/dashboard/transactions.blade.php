@@ -64,13 +64,10 @@
                   @endif
                   <p class="mb-1 mt-3">{{ Auth::user()->name }}</p>
                 </div>
-
-                <a class="dropdown-item"><i class="dropdown-item-icon icon-user text-primary"></i> My Profile</a>
                 <a class="dropdown-item" href="{{ route('logout') }}"
                   onclick="event.preventDefault(); document.getElementById('logout-form').submit();">
                   <i class="dropdown-item-icon icon-power text-primary"></i>Sign Out
                 </a>
-
                 <form id="logout-form" action="{{ route('logout') }}" method="POST" style="display: none;">
                     @csrf
                 </form>

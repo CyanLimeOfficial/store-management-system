@@ -88,13 +88,10 @@
                   @endif
                   <p class="mb-1 mt-3">{{ Auth::user()->name }}</p>
                 </div>
-
-                <a class="dropdown-item"><i class="dropdown-item-icon icon-user text-primary"></i> My Profile</a>
                 <a class="dropdown-item" href="{{ route('logout') }}"
                   onclick="event.preventDefault(); document.getElementById('logout-form').submit();">
                   <i class="dropdown-item-icon icon-power text-primary"></i>Sign Out
                 </a>
-
                 <form id="logout-form" action="{{ route('logout') }}" method="POST" style="display: none;">
                     @csrf
                 </form>
@@ -172,45 +169,50 @@
                       </div>
                   </div>
               @endif
-              <table class="table table-bordered table-hover table-striped" id="inventory">
-                  <thead>
-                      <tr>
-                          <th>Product Name</th>
-                          <th>Price</th>
-                          <th>Quantity</th>
-                          <th>Category</th>
-                          <th>Status</th>
-                          <th>Action</th> <!-- Added Action column -->
-                      </tr>
-                  </thead>
-                  <tbody>
-                      @foreach($products as $product)
-                      <tr class="product-row" data-id="{{ $product->id }}">
-                          <td>{{ $product->product_name }}</td>
-                          <td>₱{{ number_format($product->price, 2) }}</td>
-                          <td class="{{ $product->quantity > 0 ? 'text-success' : 'text-danger' }}">
-                              {{ $product->quantity }}
-                              @if($product->quantity > 0)
-                                  <i class="icon-arrow-up-circle"></i>
-                              @else
-                                  <i class="icon-arrow-down-circle"></i>
-                              @endif
-                          </td>
-                          <td>{{ ucfirst($product->category) }}</td>
-                          <td>
-                              @if($product->quantity > 10)
-                                  <label class="badge badge-success">In Stock</label>
-                              @elseif($product->quantity > 0)
-                                  <label class="badge badge-warning">Low Stock</label>
-                              @else
-                                  <label class="badge badge-danger">Out of Stock</label>
-                              @endif
-                          </td>
-                          <td></td> <!-- Empty cell for Action dropdown -->
-                      </tr>
-                      @endforeach
-                  </tbody>
-              </table>
+              <div class="card">
+                <div class="card-body">
+                    <h4 class="card-title">Store Details</h4>
+                    <table class="table table-bordered table-hover table-striped" id="inventory">
+                        <thead>
+                            <tr>
+                                <th>Product Name</th>
+                                <th>Price</th>
+                                <th>Quantity</th>
+                                <th>Category</th>
+                                <th>Status</th>
+                                <th>Action</th> <!-- Added Action column -->
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach($products as $product)
+                            <tr class="product-row" data-id="{{ $product->id }}">
+                                <td>{{ $product->product_name }}</td>
+                                <td>₱{{ number_format($product->price, 2) }}</td>
+                                <td class="{{ $product->quantity > 0 ? 'text-success' : 'text-danger' }}">
+                                    {{ $product->quantity }}
+                                    @if($product->quantity > 0)
+                                        <i class="icon-arrow-up-circle"></i>
+                                    @else
+                                        <i class="icon-arrow-down-circle"></i>
+                                    @endif
+                                </td>
+                                <td>{{ ucfirst($product->category) }}</td>
+                                <td>
+                                    @if($product->quantity > 10)
+                                        <label class="badge badge-success">In Stock</label>
+                                    @elseif($product->quantity > 0)
+                                        <label class="badge badge-warning">Low Stock</label>
+                                    @else
+                                        <label class="badge badge-danger">Out of Stock</label>
+                                    @endif
+                                </td>
+                                <td></td> <!-- Empty cell for Action dropdown -->
+                            </tr>
+                            @endforeach
+                        </tbody>
+                    </table>
+                </div>
+              </div>
           </div>
           <!-- content-wrapper ends -->
           <!-- partial -->
