@@ -7,7 +7,7 @@ use App\Http\Controllers\GetStarted;
 use App\Http\Controllers\Home;
 use App\Http\Controllers\Products_Inventory;
 use App\Http\Controllers\POS;
-use App\Http\Controllers\TransactionsView; // <--- 1. IMPORT YOUR NEW CONTROLLER
+use App\Http\Controllers\TransactionsView; 
 
 // Import Middleware
 use App\Http\Middleware\CheckStoreExist;
@@ -63,15 +63,13 @@ Route::middleware(['auth', 'check.store_info'])->group(function () {
     Route::put('/inventory/{product}/update', [Products_Inventory::class, 'update_stock'])->name('edit.quantity.product');
     Route::delete('/inventory/{product}/delete', [Products_Inventory::class, 'delete_product'])->name('delete.product');
 
-    // ▼▼▼ 2. ADD THE NEW TRANSACTION ROUTES HERE ▼▼▼
-
     // Route to display the transactions page UI
-    Route::get('/transactions', [TransactionsView::class, 'index'])->name('transactions.index');
-
-    // API routes for the page to fetch data dynamically
-    Route::prefix('api')->name('api.')->group(function () {
-        Route::get('/transactions', [TransactionsView::class, 'list'])->name('transactions.list');
-        Route::get('/transactions/{transaction}', [TransactionsView::class, 'show'])->name('transactions.show');
+    Route::get('/transactions', function () {
+        return view('dashboard.transactions');
     });
-    // ▲▲▲ END OF NEW ROUTES ▲▲▲
+
+    Route::get('/transactions-list', [TransactionsView::class, 'list'])->name('transactions.list');
+    Route::get('/transactions/{transaction}', [TransactionsView::class, 'show'])->name('transactions.show');
+
+
 });
