@@ -68,51 +68,7 @@
 
     //Sessions by Channel doughnut chart
 
-    var doughnutChartCanvas = $("#earningChart").get(0).getContext("2d");
-            var doughnutPieData = {
-                datasets: [{
-                    data: [55,45],
-                    backgroundColor: [
-                        '#ffca00',
-                        '#38ce3c',
-                    ],
-                    borderColor: [
-                      '#ffca00',
-                      '#38ce3c',
-                    ],
-                }],
 
-                // These labels appear in the legend and in the tooltips when hovering different arcs
-                labels: [
-                    'Sold',
-                    'Debt',
-                ]
-            };
-            var doughnutPieOptions = {
-                cutoutPercentage: 75,
-                animationEasing: "easeOutBounce",
-                animateRotate: true,
-                animateScale: false,
-                responsive: true,
-                maintainAspectRatio: true,
-                showScale: true,
-                legend: {
-                    display: true
-                },
-                layout: {
-                    padding: {
-                        left: 0,
-                        right: 0,
-                        top: 0,
-                        bottom: 0
-                    }
-                }
-            };
-            var doughnutChart = new Chart(doughnutChartCanvas, {
-                type: 'doughnut',
-                data: doughnutPieData,
-                options: doughnutPieOptions
-            });
   });
 
 })(jQuery);

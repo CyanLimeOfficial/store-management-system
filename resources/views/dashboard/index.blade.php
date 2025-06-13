@@ -31,7 +31,21 @@
         $products = Product_Inventory::where('store_id', $store->id)->get();
         $products = Product_Inventory::where('store_id', $store->id)->get();
       @endphp
+    {{-- CSS --}}
+    <style>
+      #refresh-dashboard-button .icon-refresh.spinning {
+        animation: spin 1s linear infinite !important;
+      }
 
+      @keyframes spin {
+        from {
+          transform: rotate(0deg);
+        }
+        to {
+          transform: rotate(360deg);
+        }
+      }
+    </style>
   </head>
   <body>
     <div class="container-scroller">
@@ -165,7 +179,9 @@
                       </button>
                     </div>
                     <div class="col-sm-6 col-md-3 p-3 text-center btn-wrapper">
-                      <button type="button" class="btn px-0"><i class="icon-folder mr-2"></i>See Debts</button>
+                        <button type="button" id="see-debts-button" class="btn px-0" data-toggle="modal" data-target="#debtsModal">
+                            <i class="icon-folder mr-2"></i>See Debts
+                        </button>
                     </div>
                     <div class="col-sm-6 col-md-3 p-3 text-center btn-wrapper">
                       <button type="button" class="btn px-0" data-toggle="modal" data-target="#changeStoreNameModal">
@@ -180,13 +196,30 @@
               <div class="col-md-12 justify-content-center grid-margin align-items-center stretch-card">
                 <div class="card">
                   <div class="card-body">
-                    <h4 class="card-title">Status</h4>
-                    <p>As of {{now()->format('F Y')}}</p>
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <h4 class="card-title mb-0">Status</h4>
+                            <p class="text-muted">As of {{ now()->format('F Y') }}</p>
+                        </div>
+                        <div class="d-flex align-items-center">
+                            <span class="text-muted mr-2">Updated Report</span>
+                            <button id="refresh-dashboard-button" class="btn btn-icons border-0 p-2" style="width: 40px; height: 40px;">
+                                <span class="icon-wrapper">
+                                    <i class="icon-refresh"></i>
+                                </span>
+
+                                <span class="spinner-wrapper d-none">
+                                    <span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
+                                </span>
+                            </button>
+                        </div>
+                    </div>
                     <div class="aligner-wrapper">
                       <canvas id="earningChart" height="90"></canvas>
                       <div class="wrapper d-flex flex-column justify-content-center absolute absolute-center">
-                        <h2 class="text-center mb-0 font-weight-bold">300</h2>
-                        <small class="d-block text-center text-muted  font-weight-semibold mb-0">Total Earning</small>
+                        {{-- ID added for AJAX --}}
+                        <h2 class="text-center mb-0 font-weight-bold" id="total-earning">${{ number_format($totalEarning, 2) }}</h2>
+                        <small class="d-block text-center text-muted font-weight-semibold mb-0">Total Earning</small>
                       </div>
                     </div>
                     <div class="wrapper mt-4 d-flex flex-wrap align-items-center">
@@ -195,6 +228,7 @@
                         <p class="mb-0 ml-2">Sold</p>
                       </div>
                       <div class="d-flex">
+                        {{-- Note: Your legend says "Debts" but the color is green (success) --}}
                         <span class="square-indicator bg-success ml-2"></span>
                         <p class="mb-0 ml-2">Debts</p>
                       </div>
@@ -203,9 +237,6 @@
                 </div>
               </div>
             </div>
-            <!-- Quick Action Toolbar Starts-->
-
-            <!-- Quick Action Toolbar Ends-->
             <div class="row">
               <div class="col-md-12 grid-margin">
                 <div class="card">
@@ -213,16 +244,17 @@
                     <div class="row">
                       <div class="col-md-12">
                         <div class="d-sm-flex align-items-baseline report-summary-header">
-                          <h5 class="font-weight-semibold">Report Summary</h5> <span class="ml-auto">Updated Report</span> <button class="btn btn-icons border-0 p-2"><i class="icon-refresh"></i></button>
+                          <h5 class="font-weight-semibold">Report Summary</h5> 
                         </div>
                       </div>
                     </div>
                     <div class="row report-inner-cards-wrapper">
-                      <div class=" col-md -6 col-xl report-inner-card">
+                      <div class="col-md-6 col-xl report-inner-card">
                         <div class="inner-card-text">
                           <span class="report-title">DEBT</span>
-                          <h4>$32123</h4>
-                          <span class="report-count"> 2 Reports</span>
+                          {{-- ID added for AJAX --}}
+                          <h4 id="debt-total">${{ number_format($debtTotal, 2) }}</h4>
+                          <span class="report-count" id="debt-count">{{ $debtCount }} Reports</span>
                         </div>
                         <div class="inner-card-icon bg-success">
                           <i class="icon-rocket"></i>
@@ -231,8 +263,9 @@
                       <div class="col-md-6 col-xl report-inner-card">
                         <div class="inner-card-text">
                           <span class="report-title">PURCHASE</span>
-                          <h4>95,458</h4>
-                          <span class="report-count"> 3 Reports</span>
+                          {{-- ID added for AJAX --}}
+                          <h4 id="purchase-total">${{ number_format($purchaseTotal, 2) }}</h4>
+                          <span class="report-count" id="purchase-count">{{ $purchaseCount }} Reports</span>
                         </div>
                         <div class="inner-card-icon bg-danger">
                           <i class="icon-briefcase"></i>
@@ -241,8 +274,9 @@
                       <div class="col-md-6 col-xl report-inner-card">
                         <div class="inner-card-text">
                           <span class="report-title">QUANTITY</span>
-                          <h4>2650</h4>
-                          <span class="report-count"> 5 Reports</span>
+                          {{-- ID added for AJAX --}}
+                          <h4 id="total-quantity">{{ number_format($totalQuantity) }}</h4>
+                          <span class="report-count">In Stock</span>
                         </div>
                         <div class="inner-card-icon bg-warning">
                           <i class="icon-globe-alt"></i>
@@ -251,8 +285,9 @@
                       <div class="col-md-6 col-xl report-inner-card">
                         <div class="inner-card-text">
                           <span class="report-title">TRANSACTION</span>
-                          <h4>.</h4>
-                          <span class="report-count"> 9 Reports </span>
+                          {{-- ID added for AJAX --}}
+                          <h4 id="transaction-count">{{ number_format($transactionCount) }}</h4>
+                          <span class="report-count">Total</span>
                         </div>
                         <div class="inner-card-icon bg-primary">
                           <i class="icon-diamond"></i>
@@ -339,6 +374,36 @@
           </div>
         </div>
       </div>
+      {{-- See Debts --}}
+      <div class="modal fade" id="debtsModal" tabindex="-1" role="dialog" aria-labelledby="debtsModalLabel" aria-hidden="true">
+          <div class="modal-dialog modal-lg" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="debtsModalLabel">Recent Debt Transactions</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <div class="table-responsive">
+                        <table class="table table-striped" id="debts-datatable">
+                            <thead>
+                                <tr>
+                                    <th>Transaction ID</th>
+                                    <th>Store</th>
+                                    <th>Total Amount</th>
+                                    <th>Date</th>
+                                    <th style="width: 35%;">Items in Transaction</th>
+                                </tr>
+                            </thead>
+                            <tbody id="debts-table-body">
+                                </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+          </div>
+      </div>
       {{-- Add Products Modal --}}
       <div class="modal fade" id="addProductModal" tabindex="-1" role="dialog" aria-labelledby="addProductModalLabel" aria-hidden="true">
           <div class="modal-dialog" role="document">
@@ -400,15 +465,16 @@
     <script src="https://cdn.datatables.net/1.11.5/js/dataTables.bootstrap4.min.js"></script>
       {{-- JS Custom Inline --}}
       <script>
-        $(document).ready(function() {
-          $('#productTable').DataTable({
-            paging: true,       // Enable pagination
-            searching: true,    // Enable search box
-            ordering: true,     // Enable sorting
-            info: true,         // Show table information
-            responsive: true    // Enable responsive mode
+          $(document).ready(function() {
+              // Initialize the first DataTable
+              $('#productTable').DataTable({
+                  paging: true,       // Enable pagination
+                  searching: true,    // Enable search box
+                  ordering: true,     // Enable sorting
+                  info: true,         // Show table information
+                  responsive: true    // Enable responsive mode
+              });
           });
-        });
       </script>
       {{-- Change store name --}}
       <script>
@@ -464,6 +530,82 @@
             });
         });
       </script>
+      {{-- See Debts --}}
+      <script>
+        $(document).ready(function() {
+            // This variable will hold our DataTable instance
+            let debtsDataTable;
+
+            // Listen for a click on the "See Debts" button
+            $('#see-debts-button').on('click', function() {
+                const tableId = '#debts-datatable';
+                const url = "{{ route('debts.list') }}"; // Make sure this route name matches your route file
+
+                // Check if the DataTable has already been initialized
+                if ($.fn.DataTable.isDataTable(tableId)) {
+                    // If yes, just reload the data from the server
+                    debtsDataTable.ajax.reload();
+                } else {
+                    // If not, initialize it for the first time
+                    debtsDataTable = $(tableId).DataTable({
+                        // --- DataTables Configuration ---
+                        responsive: true,
+                        processing: true, // Shows a "Processing..." message while loading
+                        
+                        // --- Data Source ---
+                        ajax: {
+                            url: url, // The URL to fetch data from
+                            dataSrc: 'data' // Tells DataTables to look for the 'data' key in the JSON
+                        },
+
+                        // --- Column Definitions ---
+                        // This maps your JSON data to the table columns
+                        columns: [
+                            { data: 'id' },
+                            { data: 'customer_name' },
+                            { 
+                                data: 'total_amount',
+                                // Use a render function to format the currency
+                                render: function(data, type, row) {
+                                    return '₱' + parseFloat(data).toLocaleString('en-US', {
+                                        minimumFractionDigits: 2,
+                                        maximumFractionDigits: 2
+                                    });
+                                }
+                            },
+                            { 
+                                data: 'transaction_date',
+                                render: function(data, type, row) {
+                                    // Format the date nicely
+                                    return new Date(data).toLocaleDateString('en-US', {
+                                        month: 'short', day: 'numeric', year: 'numeric'
+                                    });
+                                }
+                            },
+                            { 
+                                data: 'items',
+                                orderable: false, // Disable sorting for this complex column
+                                // Use a render function to build the nested list of items
+                                render: function(data, type, row) {
+                                    if (!data || data.length === 0) {
+                                        return 'No items';
+                                    }
+                                    
+                                    let itemsHtml = '<ul class="list-unstyled mb-0">';
+                                    data.forEach(item => {
+                                        itemsHtml += `<li>${item.quantity} x ${item.product_name}</li>`;
+                                    });
+                                    itemsHtml += '</ul>';
+                                    
+                                    return itemsHtml;
+                                }
+                            }
+                        ]
+                    });
+                }
+            });
+        });
+      </script>
       {{-- Add Product Modal --}}
       <script>
           $(document).ready(function() {
@@ -498,6 +640,109 @@
               });
           });
       </script>
-    
+      {{-- earnings js --}}
+      <script>
+          $(function() {
+              // --- 1. INITIAL CHART SETUP ---
+              var doughnutChartCanvas = $("#earningChart").get(0).getContext("2d");
+              var doughnutPieData = {
+                  datasets: [{
+                      data: [{{ $purchaseTotal ?? 0 }}, {{ $debtTotal ?? 0 }}],
+                      backgroundColor: ['#ffca00', '#38ce3c'],
+                      borderColor: ['#ffca00', '#38ce3c'],
+                  }],
+                  labels: ['Sold', 'Debt']
+              };
+              var doughnutPieOptions = {
+                  cutoutPercentage: 75,
+                  animationEasing: "easeOutBounce",
+                  animateRotate: true,
+                  animateScale: false,
+                  responsive: true,
+                  maintainAspectRatio: true,
+                  showScale: true,
+                  legend: { display: false },
+                  layout: { padding: { left: 0, right: 0, top: 0, bottom: 0 } }
+              };
+              var earningChart = new Chart(doughnutChartCanvas, {
+                  type: 'doughnut',
+                  data: doughnutPieData,
+                  options: doughnutPieOptions
+              });
+
+              // --- 2. EVENT LISTENER FOR THE MANUAL REFRESH BUTTON ---
+              $('#refresh-dashboard-button').on('click', function() {
+                  // Call the reload function and tell it this is a MANUAL refresh
+                  reloadDashboardData(true);
+              });
+
+              // --- 3. AJAX RELOAD FUNCTION ---
+              function reloadDashboardData(isManualRefresh = false) {
+                  // --- NEW SPINNER LOGIC (START) ---
+                  const refreshButton = $('#refresh-dashboard-button');
+                  const iconWrapper = refreshButton.find('.icon-wrapper');
+                  const spinnerWrapper = refreshButton.find('.spinner-wrapper');
+
+                  // Show loading state
+                  refreshButton.prop('disabled', true);
+                  iconWrapper.addClass('d-none');
+                  spinnerWrapper.removeClass('d-none');
+                  // --- NEW SPINNER LOGIC (END) ---
+
+                  fetch("{{ route('dashboard.data') }}")
+                      .then(response => response.json())
+                      .then(data => {
+                          // Helper functions for formatting numbers
+                          const formatCurrency = (num) => '$' + parseFloat(num).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+                          const formatInt = (num) => parseInt(num).toLocaleString('en-US');
+
+                          // Update all dashboard cards with new data
+                          $('#total-earning').text(formatCurrency(data.totalEarning));
+                          $('#debt-total').text(formatCurrency(data.debtTotal));
+                          $('#debt-count').text(formatInt(data.debtCount) + ' Reports');
+                          $('#purchase-total').text(formatCurrency(data.purchaseTotal));
+                          $('#purchase-count').text(formatInt(data.purchaseCount) + ' Reports');
+                          $('#total-quantity').text(formatInt(data.totalQuantity));
+                          $('#transaction-count').text(formatInt(data.transactionCount));
+
+                          // Update Doughnut Chart data
+                          earningChart.data.datasets[0].data[0] = data.purchaseTotal;
+                          earningChart.data.datasets[0].data[1] = data.debtTotal;
+                          earningChart.update();
+
+                          // Show SweetAlert only on manual refresh
+                          if (isManualRefresh) {
+                              Swal.fire({
+                                  toast: true,
+                                  position: 'top-end',
+                                  icon: 'success',
+                                  title: 'Dashboard refreshed',
+                                  showConfirmButton: false,
+                                  timer: 3000,
+                                  timerProgressBar: true
+                              });
+                          }
+                      })
+                      .catch(error => {
+                          console.error('Error reloading dashboard data:', error);
+                          if (isManualRefresh) {
+                              Swal.fire({
+                                  icon: 'error',
+                                  title: 'Oops...',
+                                  text: 'Could not refresh data!'
+                              });
+                          }
+                      })
+                      .finally(() => {
+                          // --- NEW SPINNER LOGIC (START) ---
+                          // Hide loading state
+                          refreshButton.prop('disabled', false);
+                          spinnerWrapper.addClass('d-none');
+                          iconWrapper.removeClass('d-none');
+                          // --- NEW SPINNER LOGIC (END) ---
+                      });
+              }
+          });
+      </script>
   </body>
 </html>
